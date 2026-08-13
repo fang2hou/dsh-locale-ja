@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: typecheck / lint / format / build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v2
+
+      - name: Install dependencies
+        run: mise run install
+
+      - name: Check (typecheck, lint, format-check, build)
+        run: mise run check
+
+  conventional-commits:
+    name: conventional commits (cocogitto)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v2
+
+      - name: Validate commit history
+        run: cog check
