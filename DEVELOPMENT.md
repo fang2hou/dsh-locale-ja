@@ -145,6 +145,9 @@ exists** (there is no PyPI-style pre-claim). Bootstrap it once:
    (Environment name is optional — leave it blank unless you add a GitHub
    environment to the workflow.)
 
+   Or via CLI (after `npm login`):
+   `npm trust github @fang2hou/dsh-locale-ja --file release.yml --repository fang2hou/dsh-locale-ja --allow-publish --registry https://registry.npmjs.org -y`
+
 ### Routine releases
 
 ```bash
