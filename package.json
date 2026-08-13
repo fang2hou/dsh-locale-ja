@@ -1,7 +1,6 @@
 {
   "name": "dsh-locale-ja",
   "version": "0.1.0",
-  "private": true,
   "description": "Japanese (日本語) locale injector for DeepSeek Harness — adds 日本語 as a selectable interface language alongside 中文 and English, with Japanese system fonts and client-side persistence.",
   "keywords": [
     "cordis",
@@ -12,7 +11,15 @@
     "locale",
     "plugin"
   ],
+  "homepage": "https://github.com/fang2hou/dsh-locale-ja#readme",
+  "bugs": {
+    "url": "https://github.com/fang2hou/dsh-locale-ja/issues"
+  },
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fang2hou/dsh-locale-ja.git"
+  },
   "files": [
     "dist",
     "README.md",
@@ -21,6 +28,11 @@
     "LICENSE"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true,
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node scripts/artifact.test.mjs",

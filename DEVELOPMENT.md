@@ -108,3 +108,29 @@ prek run --all-files  # run all pre-commit hooks
 
 Review the diff, confirm no unintended files or dependencies were added, and
 that architecture invariants (see `ARCHITECTURE.md`) still hold.
+
+## Releasing
+
+Releases are published to the public npm registry by the `Release` workflow
+(`.github/workflows/release.yml`) on version tags. The published package
+contains the built `dist/client.js`; loading into DSH is unchanged (still
+`cordis_define` / `cordis_run`). See [ADR-0005](./docs/adr/0005-npm-distribution-channel.md).
+
+Prerequisite: the repository secret `NPM_TOKEN` must hold an npm automation or
+granular access token with publish rights for `dsh-locale-ja`.
+
+```bash
+# 1. bump the version (keep package.json the single source of truth)
+$EDITOR package.json            # set "version": "0.X.Y"
+
+# 2. commit with a Conventional Commits message
+cog commit chore release --version 0.X.Y   # or: cog commit -m "chore(release): v0.X.Y"
+
+# 3. tag and push
+git tag vX.Y.Z
+git push origin main --tags
+```
+
+Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`,
+builds, and publishes with provenance. Confirm the package at
+<https://www.npmjs.com/package/dsh-locale-ja>.

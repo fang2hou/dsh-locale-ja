@@ -1,0 +1,39 @@
+name: Release
+
+# Publishes the built client-plugin artifact to the public npm registry when a
+# version tag (`v*`) is pushed. Loading into DSH still happens via the dynamic
+# plugin (`cordis_define` / `cordis_run`); npm is a distribution channel only
+# (see docs/adr/0005).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write # required for npm publish --provenance (OIDC)
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      - name: Install dependencies
+        run: mise run install
+
+      - name: Check (typecheck / lint / format / build / test)
+        run: mise run check
+
+      - name: Publish to npm
+        run: |
+          npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
+          npm publish --provenance --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
