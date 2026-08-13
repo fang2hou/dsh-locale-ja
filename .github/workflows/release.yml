@@ -1,9 +1,19 @@
 name: Release
 
 # Publishes the built client-plugin artifact to the public npm registry when a
-# version tag (`v*`) is pushed. Loading into DSH still happens via the dynamic
-# plugin (`cordis_define` / `cordis_run`); npm is a distribution channel only
+# version tag (`v*`) is pushed, using npm trusted publishing (OIDC). No npm
+# token is stored as a secret. Loading into DSH is unchanged (still
+# `cordis_define` / `cordis_run`); npm is a distribution channel only
 # (see docs/adr/0005).
+#
+# Prerequisite: a trusted publisher for `dsh-locale-ja` must be configured on
+# npmjs.com (package Settings → Trusted publishing → GitHub Actions) pointing
+# at this repository and this workflow filename (`release.yml`). npm trusted
+# publishing requires the package to already exist, so the first version is
+# published manually once — see DEVELOPMENT.md → Releasing.
+#
+# Requires npm CLI >= 11.5.1 (Node 24, provisioned by mise, satisfies this).
+# Provenance is attached automatically by trusted publishing (no flag needed).
 
 on:
   push:
@@ -12,7 +22,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # required for npm publish --provenance (OIDC)
+  id-token: write # required for npm trusted publishing (OIDC)
 
 jobs:
   publish:
@@ -31,9 +41,7 @@ jobs:
       - name: Check (typecheck / lint / format / build / test)
         run: mise run check
 
-      - name: Publish to npm
-        run: |
-          npm config set "//registry.npmjs.org/:_authToken" "$NPM_TOKEN"
-          npm publish --provenance --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Tokenless: npm CLI (>= 11.5.1) auto-detects the GitHub Actions OIDC
+      # environment and exchanges it for a short-lived publish credential.
+      - name: Publish to npm (trusted publishing / OIDC)
+        run: npm publish

@@ -1,4 +1,4 @@
-# ADR-0005: npm as a distribution channel
+# ADR-0005: npm as a distribution channel (trusted publishing)
 
 - Status: Accepted
 - Date: 2026-08-14
@@ -17,14 +17,20 @@ Consumers today obtain it by building from source. Publishing to npm adds
 versioning, easy updates (`pnpm update`), discoverability, and CI-driven
 releases — without changing how DSH loads the plugin.
 
+Authentication for publishing is handled by **npm trusted publishing** (OpenID
+Connect), so no long-lived npm token is stored as a repository secret. Each
+publish is authenticated with a short-lived, workflow-specific credential that
+npm issues after verifying the GitHub Actions OIDC identity.
+
 ## Decision
 
 Publish `dsh-locale-ja` to the **public npm registry** as a distribution
-channel for the built artifact.
+channel for the built artifact, using trusted publishing for CI releases.
 
 - The package contains `dist/client.js` (the function-body artifact) plus the
   README and LICENSE. It is **not** an importable module — the function-body
-  invariant from ADR-0001 is unchanged.
+  invariant from ADR-0001 is unchanged, and there is intentionally no
+  `main` / `exports` entry.
 - Consumers obtain the artifact with `pnpm add dsh-locale-ja` (or
   `npm install` / `yarn add`), read `node_modules/dsh-locale-ja/dist/client.js`,
   and pass its contents to `cordis_define` exactly as in the build-from-source
@@ -32,17 +38,29 @@ channel for the built artifact.
 - `package.json` is public (`private` removed), with `publishConfig.registry`
   pinned to `https://registry.npmjs.org/` so publishing is not affected by a
   developer's local registry mirror.
-- A `Release` workflow publishes on version tags (`v*`) with provenance.
+- The `Release` workflow publishes on version tags (`v*`) with
+  `permissions: id-token: write` and a plain `npm publish`; npm CLI (>= 11.5.1,
+  provided by Node 24 via mise) auto-detects OIDC and attaches provenance
+  automatically. No `NPM_TOKEN` secret is used.
+
+## Constraints
+
+- npm trusted publishing can only be configured for a package that **already
+  exists** on the registry (npm has no PyPI-style pre-claim; this prevents
+  package-name hijacking). Because `dsh-locale-ja` is new, the **first**
+  version is published manually once to create the package; afterwards the
+  trusted publisher is configured on npmjs.com and all subsequent versions
+  publish via OIDC. See [DEVELOPMENT.md](../../DEVELOPMENT.md) → Releasing.
+- Trusted publishing requires npm CLI >= 11.5.1 and Node >= 22.14 (both met by
+  the `node = "24"` tool), and a GitHub-hosted runner (`ubuntu-latest`).
+- Each package supports exactly one trusted publisher configuration.
 
 ## Consequences
 
 - Loading is still `cordis_define` / `cordis_run`; npm does not introduce a new
   loading mechanism and does not contradict ADR-0001.
-- Releases are driven by tags: bump the version in `package.json`, commit, tag
-  `vX.Y.Z`, push the tag — CI builds, validates, and publishes. See
-  [DEVELOPMENT.md](../../DEVELOPMENT.md).
-- Publishing requires the `NPM_TOKEN` repository secret (an npm automation or
-  granular access token). Provenance additionally requires the workflow's
-  `id-token: write` permission and a GitHub-hosted runner.
-- The package has no `main` / `exports` entry by design: importing it is not
-  supported, because the artifact is a function body, not a module.
+- No npm token to create, store, or rotate. To publish, bump the version in
+  `package.json`, commit, tag `vX.Y.Z`, push the tag — CI builds, validates,
+  and publishes via OIDC.
+- The package is verifiable: every OIDC publish carries a provenance
+  attestation linking it to this source and the workflow run.
