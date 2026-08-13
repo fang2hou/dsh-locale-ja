@@ -54,10 +54,10 @@ source.
 ### Install via npm
 
 ```bash
-pnpm add dsh-locale-ja   # or: npm install / yarn add / bun add
+pnpm add @fang2hou/dsh-locale-ja   # or: npm install / yarn add / bun add
 ```
 
-After installing, load the contents of `node_modules/dsh-locale-ja/dist/client.js`
+After installing, load the contents of `node_modules/@fang2hou/dsh-locale-ja/dist/client.js`
 into DSH (next section).
 
 ### Build from source

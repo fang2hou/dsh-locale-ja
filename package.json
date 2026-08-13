@@ -1,5 +1,5 @@
 {
-  "name": "dsh-locale-ja",
+  "name": "@fang2hou/dsh-locale-ja",
   "version": "0.1.0",
   "description": "Japanese (日本語) locale injector for DeepSeek Harness — adds 日本語 as a selectable interface language alongside 中文 and English, with Japanese system fonts and client-side persistence.",
   "keywords": [

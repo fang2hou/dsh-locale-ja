@@ -36,10 +36,10 @@ DSH 出厂只提供 `zh` / `en` 两个 locale。本插件把日语补齐为完�
 ### 通过 npm 安装
 
 ```bash
-pnpm add dsh-locale-ja   # 或 npm install / yarn add / bun add
+pnpm add @fang2hou/dsh-locale-ja   # 或 npm install / yarn add / bun add
 ```
 
-安装后，将 `node_modules/dsh-locale-ja/dist/client.js` 的内容载入 DSH（见下一节）。
+安装后，将 `node_modules/@fang2hou/dsh-locale-ja/dist/client.js` 的内容载入 DSH（见下一节）。
 
 ### 从源码构建
 
