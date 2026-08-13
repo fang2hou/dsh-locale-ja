@@ -108,3 +108,58 @@ prek run --all-files  # run all pre-commit hooks
 
 Review the diff, confirm no unintended files or dependencies were added, and
 that architecture invariants (see `ARCHITECTURE.md`) still hold.
+
+## Releasing
+
+Releases are published to the public npm registry by the `Release` workflow
+(`.github/workflows/release.yml`) on version tags, using **npm trusted
+publishing (OIDC)** — no npm token is stored as a secret. The published package
+contains the built `dist/client.js`; loading into DSH is unchanged (still
+`cordis_define` / `cordis_run`). See
+[ADR-0005](./docs/adr/0005-npm-distribution-channel.md).
+
+Trusted publishing requires npm CLI ≥ 11.5.1 and Node ≥ 22.14 (both met by the
+`node = "24"` tool in `mise.toml`), and a GitHub-hosted runner (the workflow
+uses `ubuntu-latest`).
+
+### One-time setup
+
+npm trusted publishing can only be configured for a package that **already
+exists** (there is no PyPI-style pre-claim). Bootstrap it once:
+
+1. Build and publish `0.1.0` manually to create the package:
+
+   ```bash
+   pnpm build
+   npm login --registry https://registry.npmjs.org
+   npm publish --registry https://registry.npmjs.org
+   ```
+
+2. On [npmjs.com](https://www.npmjs.com) → `dsh-locale-ja` → Settings →
+   **Trusted publishing** → GitHub Actions, add a trusted publisher:
+   - Organization or user: `fang2hou`
+   - Repository: `dsh-locale-ja`
+   - Workflow filename: `release.yml`
+   - Allowed actions: `npm publish`
+
+   (Environment name is optional — leave it blank unless you add a GitHub
+   environment to the workflow.)
+
+### Routine releases
+
+```bash
+# 1. bump the version (package.json is the single source of truth)
+$EDITOR package.json            # "version": "0.X.Y"
+
+# 2. commit (Conventional Commits — validated by the cog commit-msg hook)
+git add package.json
+git commit -m "chore(release): v0.X.Y"
+
+# 3. tag and push
+git tag vX.Y.Z
+git push origin main --tags
+```
+
+Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`,
+builds, and publishes via OIDC (provenance is attached automatically). Confirm
+at <https://www.npmjs.com/package/dsh-locale-ja>.
