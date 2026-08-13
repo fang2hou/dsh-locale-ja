@@ -29,21 +29,33 @@ DSH 出厂只提供 `zh` / `en` 两个 locale。本插件把日语补齐为完�
 - 可运行 DeepSeek Harness 的环境
 - 开发/构建：Node.js 24+、pnpm 11+、[mise](https://mise.jdx.dev/)（推荐）
 
-## 快速开始
+## 安装
 
-### 1. 构建
+构建产物 `dist/client.js` 可通过 npm 安装或从源码构建获取。
+
+### 通过 npm 安装
 
 ```bash
+pnpm add dsh-locale-ja   # 或 npm install / yarn add / bun add
+```
+
+安装后，将 `node_modules/dsh-locale-ja/dist/client.js` 的内容载入 DSH（见下一节）。
+
+### 从源码构建
+
+```bash
+git clone https://github.com/fang2hou/dsh-locale-ja.git
+cd dsh-locale-ja
 mise install          # 准备 Node / pnpm / cocogitto / prek（使用 mise 时）
 pnpm install
-mise run build        # => 生成 dist/client.js
+pnpm build            # => 生成 dist/client.js
 ```
 
 不使用 mise 时，准备好 Node 24+ 与 pnpm，执行 `pnpm install && pnpm build` 即可。
 
-### 2. 载入 DSH
+## 载入 DSH
 
-把构建产物 `dist/client.js` 的**全部内容**作为一个动态插件的 `code.client` 注册并激活。最可靠的方式是让 DSH 的 agent 来完成：
+把获取到的 `dist/client.js` 的**全部内容**作为一个动态插件的 `code.client` 注册并激活。最可靠的方式是让 DSH 的 agent 来完成：
 
 ```
 请用 dist/client.js 的内容定义并运行一个 Cordis 插件。
@@ -53,7 +65,7 @@ agent 会调用 `cordis_define`（新插件，`code.client` = 文件内容）→
 
 > 说明：DSH 目前没有「免前端重建安装第三方客户端插件」的入口，因此本插件的运行形态是动态插件（`cordis_define` / `cordis_run`）。详见 [ADR-0001](./docs/adr/0001-build-target-is-the-dynamic-plugin-artifact.md)。
 
-### 3. 验证
+## 验证
 
 打开「设置 → 语言」选择 **日本語**。整个界面切换为日语，字体也变为日语样式。切回 中文 / English 依然正常。
 
