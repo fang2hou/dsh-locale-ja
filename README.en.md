@@ -1,24 +1,24 @@
 # dsh-locale-ja
 
-> A plugin that injects a **Japanese (日本語)** interface into DeepSeek Harness.
+> A plugin that adds a **Japanese (日本語)** interface to DeepSeek Harness.
 
 **English** · [中文](./README.zh.md) · [日本語](./README.md)
 
 `dsh-locale-ja` is a dynamic Cordis plugin that extends DeepSeek Harness's
 client-side locale service so that **日本語** is selectable alongside the
-shipped **中文** and **English**. Choose it in **Settings → Language** and the
+built-in **中文** and **English**. Choose it in **Settings → Language** and the
 entire UI switches to natural Japanese.
 
 ---
 
 ## Overview
 
-DSH ships with only two locales (`zh` / `en`). This plugin adds Japanese as a
-first-class interface language:
+DSH ships with only two built-in locales (`zh` / `en`). This plugin adds
+Japanese as a first-class interface language:
 
 - **Selectable Japanese** — adds 「日本語」 to the language selector; switch it
   exactly like Chinese/English.
-- **Full coverage** — translates every shipped locale namespace (~700 strings):
+- **Full coverage** — translates every built-in locale namespace (~700 strings):
   chat & composer, sidebar, workspace, model selection, all settings, goal,
   plan, subagent, workflow, trace/trajectory view, and more.
 - **Japanese system fonts** — while Japanese is active, the font stack switches
@@ -46,23 +46,36 @@ first-class interface language:
 - For development/build: Node.js 24+, pnpm 11+, [mise](https://mise.jdx.dev/)
   (recommended)
 
-## Quick start
+## Installation
 
-### 1. Build
+The built artifact `dist/client.js` is available via npm or by building from
+source.
+
+### Install via npm
 
 ```bash
+pnpm add dsh-locale-ja   # or: npm install / yarn add / bun add
+```
+
+After installing, load the contents of `node_modules/dsh-locale-ja/dist/client.js`
+into DSH (next section).
+
+### Build from source
+
+```bash
+git clone https://github.com/fang2hou/dsh-locale-ja.git
+cd dsh-locale-ja
 mise install          # provision Node / pnpm / cocogitto / prek (if using mise)
 pnpm install
-mise run build        # => dist/client.js
+pnpm build            # => dist/client.js
 ```
 
 Without mise, ensure Node 24+ and pnpm, then `pnpm install && pnpm build`.
 
-### 2. Load into DSH
+## Load into DSH
 
-Register the **entire contents** of the build artifact `dist/client.js` as a
-dynamic plugin's `code.client`, then activate it. The most reliable way is to
-ask your DSH agent:
+Register the **entire contents** of `dist/client.js` as a dynamic plugin's
+`code.client`, then activate it. The most reliable way is to ask your DSH agent:
 
 ```
 Define and run a Cordis plugin whose client code is the contents of dist/client.js.
@@ -77,7 +90,7 @@ it on the run card).
 > is the dynamic plugin (`cordis_define` / `cordis_run`). See
 > [ADR-0001](./docs/adr/0001-build-target-is-the-dynamic-plugin-artifact.md).
 
-### 3. Verify
+## Verify
 
 Open **Settings → Language** and pick **日本語**. The whole UI switches to
 Japanese with Japanese-style fonts. Switching back to 中文 / English keeps
