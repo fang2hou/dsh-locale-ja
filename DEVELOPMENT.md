@@ -135,7 +135,7 @@ exists** (there is no PyPI-style pre-claim). Bootstrap it once:
    npm publish --registry https://registry.npmjs.org
    ```
 
-2. On [npmjs.com](https://www.npmjs.com) → `dsh-locale-ja` → Settings →
+2. On [npmjs.com](https://www.npmjs.com) → `@fang2hou/dsh-locale-ja` → Settings →
    **Trusted publishing** → GitHub Actions, add a trusted publisher:
    - Organization or user: `fang2hou`
    - Repository: `dsh-locale-ja`
@@ -162,4 +162,4 @@ git push origin main --tags
 
 Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`,
 builds, and publishes via OIDC (provenance is attached automatically). Confirm
-at <https://www.npmjs.com/package/dsh-locale-ja>.
+at <https://www.npmjs.com/package/@fang2hou/dsh-locale-ja>.

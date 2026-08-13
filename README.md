@@ -36,10 +36,10 @@ DSH の組み込みロケールは `zh` / `en` の 2 つだけです。本プラ
 ### npm でインストール
 
 ```bash
-pnpm add dsh-locale-ja   # npm install / yarn add / bun add でも可
+pnpm add @fang2hou/dsh-locale-ja   # npm install / yarn add / bun add でも可
 ```
 
-インストール後、`node_modules/dsh-locale-ja/dist/client.js` の内容を DSH に読み込みます（次節）。
+インストール後、`node_modules/@fang2hou/dsh-locale-ja/dist/client.js` の内容を DSH に読み込みます（次節）。
 
 ### ソースからビルド
 

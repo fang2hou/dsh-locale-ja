@@ -6,7 +6,7 @@ name: Release
 # `cordis_define` / `cordis_run`); npm is a distribution channel only
 # (see docs/adr/0005).
 #
-# Prerequisite: a trusted publisher for `dsh-locale-ja` must be configured on
+# Prerequisite: a trusted publisher for `@fang2hou/dsh-locale-ja` must be configured on
 # npmjs.com (package Settings → Trusted publishing → GitHub Actions) pointing
 # at this repository and this workflow filename (`release.yml`). npm trusted
 # publishing requires the package to already exist, so the first version is

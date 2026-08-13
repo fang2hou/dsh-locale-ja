@@ -24,15 +24,15 @@ npm issues after verifying the GitHub Actions OIDC identity.
 
 ## Decision
 
-Publish `dsh-locale-ja` to the **public npm registry** as a distribution
+Publish `@fang2hou/dsh-locale-ja` to the **public npm registry** as a distribution
 channel for the built artifact, using trusted publishing for CI releases.
 
 - The package contains `dist/client.js` (the function-body artifact) plus the
   README and LICENSE. It is **not** an importable module — the function-body
   invariant from ADR-0001 is unchanged, and there is intentionally no
   `main` / `exports` entry.
-- Consumers obtain the artifact with `pnpm add dsh-locale-ja` (or
-  `npm install` / `yarn add`), read `node_modules/dsh-locale-ja/dist/client.js`,
+- Consumers obtain the artifact with `pnpm add @fang2hou/dsh-locale-ja` (or
+  `npm install` / `yarn add`), read `node_modules/@fang2hou/dsh-locale-ja/dist/client.js`,
   and pass its contents to `cordis_define` exactly as in the build-from-source
   path.
 - `package.json` is public (`private` removed), with `publishConfig.registry`
@@ -47,7 +47,7 @@ channel for the built artifact, using trusted publishing for CI releases.
 
 - npm trusted publishing can only be configured for a package that **already
   exists** on the registry (npm has no PyPI-style pre-claim; this prevents
-  package-name hijacking). Because `dsh-locale-ja` is new, the **first**
+  package-name hijacking). Because `@fang2hou/dsh-locale-ja` is new, the **first**
   version is published manually once to create the package; afterwards the
   trusted publisher is configured on npmjs.com and all subsequent versions
   publish via OIDC. See [DEVELOPMENT.md](../../DEVELOPMENT.md) → Releasing.
