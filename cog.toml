@@ -1,0 +1,5 @@
+# cocogitto (cog) configuration.
+# Enforces Conventional Commits for the whole repository history.
+# Create validated commits with `cog commit`, or check a message with
+# `cog verify "<type>(<scope>): <subject>"`.
+# Allowed types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert.

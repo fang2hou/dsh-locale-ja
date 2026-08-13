@@ -1,0 +1,44 @@
+# mise is the single source of truth for runtime, CLI tool versions, and tasks.
+# Install/activate everything: `mise install` then `mise run install`.
+# https://mise.jdx.dev/
+
+[tools]
+node = "24"
+pnpm = "11"
+cocogitto = "latest"
+prek = "latest"
+
+# --- Common project tasks (the project-level task interface) ---
+# Frontend work delegates to pnpm scripts; mise is the stable entry point.
+
+[tasks.install]
+description = "Install Node dependencies with pnpm."
+run = "pnpm install"
+
+[tasks.typecheck]
+description = "Type-check the TypeScript sources (no emit)."
+run = "pnpm typecheck"
+
+[tasks.lint]
+description = "Lint with oxlint."
+run = "pnpm lint"
+
+[tasks.format]
+description = "Format sources with oxfmt."
+run = "pnpm format"
+
+[tasks.format-check]
+description = "Verify sources are formatted with oxfmt."
+run = "pnpm format:check"
+
+[tasks.build]
+description = "Build the runtime client-plugin artifact to dist/client.js."
+run = "pnpm build"
+
+[tasks.check]
+description = "Run the full local validation workflow (typecheck, lint, format, build)."
+depends = ["typecheck", "lint", "format-check", "build"]
+
+[tasks.clean]
+description = "Remove build output."
+run = "rm -rf dist"

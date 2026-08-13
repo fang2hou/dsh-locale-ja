@@ -1,0 +1,42 @@
+{
+  "name": "dsh-locale-ja",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Japanese (日本語) locale injector for DeepSeek Harness — adds 日本語 as a selectable interface language alongside 中文 and English, with Japanese system fonts and client-side persistence.",
+  "keywords": [
+    "cordis",
+    "deepseek-harness",
+    "dsh",
+    "i18n",
+    "japanese",
+    "locale",
+    "plugin"
+  ],
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "README.zh.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
+    "format": "oxfmt --write --ignore-path=.oxfmtignore .",
+    "format:check": "oxfmt --check --ignore-path=.oxfmtignore ."
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "esbuild": "^0.28.0",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
+    "typescript": "^5.9.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

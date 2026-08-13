@@ -1,0 +1,40 @@
+# prek pre-commit configuration (pre-commit compatible).
+# Install hooks into your git repo:  prek install
+# Run all hooks manually:            prek run --all-files
+# https://github.com/j178/prek
+
+repos:
+  - repo: local
+    hooks:
+      - id: oxlint
+        name: oxlint
+        entry: pnpm
+        args: ["-s", "lint"]
+        language: system
+        types: ["ts"]
+        pass_filenames: false
+
+      - id: oxfmt
+        name: oxfmt (check)
+        entry: pnpm
+        args: ["-s", "format:check"]
+        language: system
+        types: ["ts"]
+        pass_filenames: false
+
+      - id: typecheck
+        name: tsc (typecheck)
+        entry: pnpm
+        args: ["-s", "typecheck"]
+        language: system
+        types: ["ts"]
+        pass_filenames: false
+        stages: [pre-push]
+
+  - repo: local
+    hooks:
+      - id: cog-verify
+        name: conventional commits (cocogitto)
+        entry: ./scripts/cog-verify-hook.sh
+        language: script
+        stages: [commit-msg]

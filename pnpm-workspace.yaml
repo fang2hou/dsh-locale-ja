@@ -1,0 +1,5 @@
+# pnpm 10+ moved dependency build-script approval here (out of package.json).
+# Approve esbuild's postinstall so its native binary is installed.
+# https://pnpm.io/settings
+allowBuilds:
+  esbuild: true

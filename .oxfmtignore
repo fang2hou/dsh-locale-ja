@@ -1,0 +1,7 @@
+# Files oxfmt must not format. oxfmt is a code formatter; markdown prose,
+# generated output, and dependencies are intentionally excluded.
+dist/
+node_modules/
+*.md
+*.mdx
+pnpm-lock.yaml
