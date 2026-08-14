@@ -2,7 +2,7 @@
 node_modules/
 
 # build output
-dist/
+lib/
 
 # logs
 *.log

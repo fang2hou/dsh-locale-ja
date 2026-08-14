@@ -1,0 +1,15 @@
+# Profile patch layer contributed by this bundle.
+#
+# `dsh plugin --profile <name> add @fang2hou/dsh-locale-ja` installs the package
+# into the profile and appends it to `dsh.profile.bundles`, which stacks this
+# patch after the base and web-app layers. The row below is what makes the
+# package a mounted Loader entry — `@deepseek-ai/dsh-client-modules` scans
+# Loader entries (not installed dependencies) for a `dsh.client` manifest, so
+# without a row the browser half is never served.
+#
+# The row mounts the Host half (an empty `apply`, see src/index.ts); the browser
+# half is discovered through this package's `dsh.client` declaration and served
+# from `exports["./client"]`.
+- insert:
+    - id: locale-ja
+      name: "@fang2hou/dsh-locale-ja"

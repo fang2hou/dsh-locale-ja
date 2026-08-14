@@ -1,15 +1,15 @@
 {
   "name": "@fang2hou/dsh-locale-ja",
   "version": "0.1.0",
-  "description": "Japanese (日本語) locale injector for DeepSeek Harness — adds 日本語 as a selectable interface language alongside 中文 and English, with Japanese system fonts and client-side persistence.",
+  "description": "Japanese (日本語) interface for DeepSeek Harness — a standard DSH client plugin that adds 日本語 as a selectable UI language alongside 中文 and English, with Japanese system fonts.",
   "keywords": [
     "cordis",
     "deepseek-harness",
     "dsh",
+    "dsh-plugin",
     "i18n",
     "japanese",
-    "locale",
-    "plugin"
+    "locale"
   ],
   "homepage": "https://github.com/fang2hou/dsh-locale-ja#readme",
   "bugs": {
@@ -21,20 +21,34 @@
     "url": "git+https://github.com/fang2hou/dsh-locale-ja.git"
   },
   "files": [
-    "dist",
-    "README.md",
-    "README.en.md",
-    "README.zh.md",
-    "LICENSE"
+    "lib/index.js",
+    "lib/client.js",
+    "lib/types/**/*.d.ts",
+    "cordis.patch.yml"
   ],
   "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/types/client/index.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node scripts/artifact.test.mjs",
+    "prepack": "node scripts/build.mjs",
+    "test": "node scripts/client.test.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
@@ -42,13 +56,62 @@
     "format:check": "oxfmt --check --ignore-path=.oxfmtignore ."
   },
   "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-client-locale": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-runtime": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-agent-preset": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-commands": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-conversation": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-cordis": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-deliverables": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-goal": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-input-trigger": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-jobs": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-message-feedback": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-model-selection": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-permission-presets": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-plan": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-settings-general": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-settings-models": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-settings-plugin-inventory": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-settings-plugins": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-sidebar": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-skill": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-slots": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-subagent": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-theme": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-trajectory": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-user-questions": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-workflow-run": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-workspace": "^0.1.0-rc.6",
+    "@deepseek-ai/dsh-session-log-export": "^0.1.0-rc.6",
     "@types/node": "^22.10.0",
     "esbuild": "^0.28.0",
     "oxfmt": "^0.63.0",
     "oxlint": "^1.78.0",
     "typescript": "^5.9.0"
   },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-locale": "^0.1.0-rc.6"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-client-locale": {
+      "optional": true
+    }
+  },
   "engines": {
     "node": ">=22"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
   }
 }

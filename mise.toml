@@ -32,13 +32,13 @@ description = "Verify sources are formatted with oxfmt."
 run = "pnpm format:check"
 
 [tasks.build]
-description = "Build the runtime client-plugin artifact to dist/client.js."
+description = "Build the plugin package into lib/ (Host half, browser bundle, declarations)."
 run = "pnpm build"
 
 [tasks.test]
-description = "Run the artifact integration test (requires a fresh build)."
+description = "Run the browser-bundle integration test (requires a fresh build)."
 depends = ["build"]
-run = "node scripts/artifact.test.mjs"
+run = "pnpm test"
 
 [tasks.check]
 description = "Run the full local validation workflow (typecheck, lint, format, build, test)."
@@ -46,4 +46,4 @@ depends = ["typecheck", "lint", "format-check", "build", "test"]
 
 [tasks.clean]
 description = "Remove build output."
-run = "rm -rf dist"
+run = "rm -rf lib"
