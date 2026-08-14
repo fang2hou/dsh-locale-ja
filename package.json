@@ -1,6 +1,6 @@
 {
   "name": "@fang2hou/dsh-locale-ja",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Japanese (日本語) interface for DeepSeek Harness — a standard DSH client plugin that adds 日本語 as a selectable UI language alongside 中文 and English, with Japanese system fonts.",
   "keywords": [
     "cordis",

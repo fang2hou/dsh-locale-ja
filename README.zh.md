@@ -17,7 +17,9 @@
 
 ## 状态
 
-当前为预发布版本 `0.1.0`，尚未发布到 npm。目标平台是 DSH `0.1.0-rc.6`，仅支持 `web` profile。由于插件通过 locale 服务的内部成员进行扩展，升级 DSH 后必须重新验证。
+当前为预发布版本 `0.2.0`。目标平台是 DSH `0.1.0-rc.6`，仅支持 `web` profile。由于插件通过 locale 服务的内部成员进行扩展，升级 DSH 后必须重新验证。
+
+> npm 上已发布的 `0.1.0` 是旧方案的产物，需要把代码粘贴到 `cordis_define` 中加载。要作为标准插件包安装，请使用 `0.2.0` 及以后的版本。
 
 ## 环境要求
 
@@ -29,7 +31,7 @@
 
 ### 安装已发布的包
 
-本包目前尚未发布到 npm。发布后，使用以下两个命令完成安装并启动：
+使用以下两个命令完成安装并启动：
 
 ```bash
 dsh plugin --profile web add @fang2hou/dsh-locale-ja
@@ -51,7 +53,7 @@ dsh plugin --profile web remove @fang2hou/dsh-locale-ja
 ```bash
 mise install && pnpm install
 pnpm build && pnpm pack
-dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-0.1.0.tgz
+dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-<version>.tgz
 ```
 
 必须使用 tarball 的绝对路径。`dsh plugin` 会把 profile 目录设为 `pnpm` 的工作目录，因此相对路径会在那里解析，而不是在仓库目录中解析。

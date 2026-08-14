@@ -3,8 +3,9 @@
 This document describes how to develop, validate, and release
 `dsh-locale-ja`.
 
-The project is pre-release (`0.1.0`), is not yet published to npm, and
-supports the DSH `0.1.0-rc.6` `web` profile and browser UI only.
+The project is pre-release (`0.2.0`) and supports the DSH `0.1.0-rc.6` `web`
+profile and browser UI only. The `0.1.0` on npm is the older, dynamically
+loaded artifact; the standard package ships from `0.2.0`.
 
 ## Prerequisites
 
@@ -167,32 +168,29 @@ Trusted publishing requires npm CLI ≥ 11.5.1 and Node ≥ 22.14 (both met by t
 `node = "24"` tool in `mise.toml`), and a GitHub-hosted runner (the workflow
 uses `ubuntu-latest`).
 
-### One-time setup
+### One-time setup (done)
 
 npm trusted publishing can only be configured for a package that **already
-exists** (there is no PyPI-style pre-claim). Bootstrap it once:
+exists** (there is no PyPI-style pre-claim), so the bootstrap was a manual
+`0.1.0` publish followed by registering the trusted publisher. Both are done;
+this section is kept as the record of what the release path depends on:
 
-1. Build and publish `0.1.0` manually to create the package:
+- `@fang2hou/dsh-locale-ja` exists on the public registry.
+- A trusted publisher is registered on npmjs.com (package Settings →
+  **Trusted publishing** → GitHub Actions) for repository
+  `fang2hou/dsh-locale-ja`, workflow `release.yml`, allowed action
+  `npm publish`, with no environment name.
 
-   ```bash
-   pnpm build
-   npm login --registry https://registry.npmjs.org
-   npm publish --registry https://registry.npmjs.org
-   ```
+Equivalent CLI form, for reference or for re-registering:
 
-2. On [npmjs.com](https://www.npmjs.com) →
-   `@fang2hou/dsh-locale-ja` → Settings → **Trusted publishing** → GitHub
-   Actions, add a trusted publisher:
-   - Organization or user: `fang2hou`
-   - Repository: `dsh-locale-ja`
-   - Workflow filename: `release.yml`
-   - Allowed actions: `npm publish`
+```bash
+npm trust github @fang2hou/dsh-locale-ja \
+  --file release.yml --repository fang2hou/dsh-locale-ja \
+  --allow-publish --registry https://registry.npmjs.org -y
+```
 
-   (Environment name is optional — leave it blank unless you add a GitHub
-   environment to the workflow.)
-
-   Or via CLI (after `npm login`):
-   `npm trust github @fang2hou/dsh-locale-ja --file release.yml --repository fang2hou/dsh-locale-ja --allow-publish --registry https://registry.npmjs.org -y`
+Routine releases therefore need no local npm credentials: pushing the tag is
+the whole release.
 
 ### Routine releases
 

@@ -17,7 +17,9 @@ DSH の組み込み **中文**・**English** と並ぶ選択可能な言語と�
 
 ## ステータス
 
-プレリリースの `0.1.0` で、npm にはまだ公開していません。対象は DSH `0.1.0-rc.6` の `web` プロファイルだけです。ロケールサービスを内部メンバー経由で拡張しているため、DSH をアップグレードした場合は再検証が必要です。
+プレリリース段階の `0.2.0` です。対象は DSH `0.1.0-rc.6` の `web` プロファイルだけです。ロケールサービスを内部メンバー経由で拡張しているため、DSH をアップグレードした場合は再検証が必要です。
+
+> npm に公開済みの `0.1.0` は、`cordis_define` にコードを貼り付けて読み込む旧方式の成果物です。標準プラグインパッケージとして導入する場合は `0.2.0` 以降を利用してください。
 
 ## 要件
 
@@ -29,7 +31,7 @@ DSH の組み込み **中文**・**English** と並ぶ選択可能な言語と�
 
 ### 公開パッケージを使う
 
-npm 公開後は、次の 2 つのコマンドでインストールして起動できます。
+次の 2 つのコマンドでインストールして起動できます。
 
 ```bash
 dsh plugin --profile web add @fang2hou/dsh-locale-ja
@@ -51,7 +53,7 @@ dsh plugin --profile web remove @fang2hou/dsh-locale-ja
 ```bash
 mise install && pnpm install
 pnpm build && pnpm pack
-dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-0.1.0.tgz
+dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-<version>.tgz
 ```
 
 `dsh plugin` はプロファイルディレクトリをカレントディレクトリにして `pnpm` を実行するため、tarball は相対パスではなく絶対パスで指定してください。
