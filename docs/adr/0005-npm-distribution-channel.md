@@ -15,8 +15,8 @@ without a frontend rebuild. See
 
 The package is a real importable npm package with `exports` entries for `.` and
 `./client`. It publishes the plugin files `lib/index.js`, `lib/client.js`,
-`lib/types/**/*.d.ts`, and `cordis.patch.yml`. Version `0.1.0` is pre-release
-and has not yet been published.
+`lib/types/**/*.d.ts`, and `cordis.patch.yml`. `0.1.0` was published earlier as
+the dynamically loaded artifact, so the standard package ships from `0.2.0`.
 
 ## Decision
 
@@ -31,8 +31,8 @@ CI releases use npm trusted publishing (OIDC):
   runner.
 - npm permits one trusted publisher per package.
 - The package must already exist on npm before trusted publishing can be
-  configured, so the first version is published manually once; subsequent
-  versions use OIDC.
+  configured. That bootstrap is complete: `0.1.0` was published manually and
+  the trusted publisher is registered, so every later version uses OIDC.
 
 ## Alternatives considered
 

@@ -17,7 +17,9 @@ The package adds **日本語** as a selectable locale beside DSH's built-in **�
 
 ## Status
 
-This is pre-release version `0.1.0` and has not been published to npm. It targets DSH `0.1.0-rc.6` and supports the `web` profile only. Because the plugin extends the locale service through internal members, every DSH upgrade requires re-verification.
+This is pre-release version `0.2.0`. It targets DSH `0.1.0-rc.6` and supports the `web` profile only. Because the plugin extends the locale service through internal members, every DSH upgrade requires re-verification.
+
+> The `0.1.0` already on npm is the older artifact, loaded by pasting its code into `cordis_define`. Use `0.2.0` or later for the standard plugin package.
 
 ## Requirements
 
@@ -29,7 +31,7 @@ This is pre-release version `0.1.0` and has not been published to npm. It target
 
 ### Install the published package
 
-The package is not on npm yet. After publication, install and start it with these two commands:
+Install and start it with these two commands:
 
 ```bash
 dsh plugin --profile web add @fang2hou/dsh-locale-ja
@@ -51,7 +53,7 @@ From the repository root, build and pack the package, then add the generated tar
 ```bash
 mise install && pnpm install
 pnpm build && pnpm pack
-dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-0.1.0.tgz
+dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-<version>.tgz
 ```
 
 Use an absolute tarball path. `dsh plugin` runs `pnpm` with the profile directory as its working directory, so a relative path would resolve there instead of at the repository location.
