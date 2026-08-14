@@ -1,18 +1,22 @@
 # Development
 
-This document describes how to develop, validate, and release `dsh-locale-ja`.
+This document describes how to develop, validate, and release
+`dsh-locale-ja`.
+
+The project is pre-release (`0.1.0`), is not yet published to npm, and
+supports the DSH `0.1.0-rc.6` `web` profile and browser UI only.
 
 ## Prerequisites
 
 The project standardizes its environment with [mise](https://mise.jdx.dev/):
 
-| Tool                         | Managed by  | Purpose                                  |
-| ---------------------------- | ----------- | ---------------------------------------- |
-| Node.js 24                   | `mise`      | Runtime / build                          |
-| pnpm 11                      | `mise`      | Package manager (never npm/yarn)         |
-| [cocogitto](https://cocogitto.ai/) (`cog`) | `mise` | Conventional Commits validation          |
-| [prek](https://github.com/j178/prek)       | `mise` | Pre-commit framework                     |
-| TypeScript, esbuild, oxlint, oxfmt | npm devDeps | Type-check, bundle, lint, format   |
+| Tool                         | Managed by  | Purpose                                      |
+| ---------------------------- | ----------- | -------------------------------------------- |
+| Node.js 24                   | `mise`      | Runtime / build                              |
+| pnpm 11                      | `mise`      | Package manager (never npm/yarn)             |
+| [cocogitto](https://cocogitto.ai/) (`cog`) | `mise` | Conventional Commits validation             |
+| [prek](https://github.com/j178/prek)       | `mise` | Pre-commit framework                         |
+| TypeScript, esbuild, oxlint, oxfmt | npm devDeps | Type-check, declarations, bundle, lint, format |
 
 ## Setup
 
@@ -25,12 +29,16 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
 ## Toolchain
 
 - **Package manager**: pnpm only. Do not introduce npm or yarn.
-- **Linter**: [oxlint](https://oxc.rs/docs/guide/usage/linter) (config: `.oxlintrc.json`). No ESLint.
-- **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config via defaults). No Prettier.
-- **Type checker**: `tsc --noEmit` (config: `tsconfig.json`). Emit is done by esbuild, not tsc.
-- **Bundler**: esbuild (`scripts/build.mjs`).
+- **Linter**: [oxlint](https://oxc.rs/docs/guide/usage/linter) (config:
+  `.oxlintrc.json`). No ESLint.
+- **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config via
+  defaults). No Prettier.
+- **Type checker**: `tsc --noEmit` (config: `tsconfig.json`).
+- **Bundler**: esbuild (`scripts/build.mjs`); it also emits declarations through
+  TypeScript.
 - **Commits**: Conventional Commits, validated by cocogitto (`cog`) and prek.
-- **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus a `commit-msg` hook that runs `cog verify`.
+- **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus
+  a `commit-msg` hook that runs `cog verify`.
 
 ## Common tasks
 
@@ -42,9 +50,10 @@ mise run typecheck      # tsc --noEmit
 mise run lint           # oxlint .
 mise run format         # oxfmt --write .
 mise run format-check   # oxfmt --check .
-mise run build          # node scripts/build.mjs  -> dist/client.js
-mise run check          # typecheck + lint + format-check + build
-mise run clean          # remove dist/
+mise run build          # node scripts/build.mjs -> lib/
+mise run test           # pnpm test (browser-bundle integration test)
+mise run check          # typecheck + lint + format-check + build + test
+mise run clean          # remove lib/
 ```
 
 The project's main validation entry point is:
@@ -57,35 +66,67 @@ Local validation and CI use the same mise tasks so they cannot diverge.
 
 ## Build pipeline
 
-The harness evaluates a dynamic Client plugin's `code.client` as a **plain
-function body** — its closure injects builtins (`styles`, `React`, `host`,
-`console`, …). It is not a module: no `import` / `export` / `require` is
-allowed at the top level.
+The build produces three generated outputs:
 
-`scripts/build.mjs` therefore:
+- `lib/index.js` — Host half, emitted as ESM. Its empty `apply()` lets the
+  package mount as a DSH Loader entry.
+- `lib/client.js` — browser half, emitted as CommonJS inside the DSH loader
+  envelope.
+- `lib/types/**/*.d.ts` — TypeScript declarations emitted by `tsc`.
 
-1. Bundles `src/client.ts` (plus its `dictionaries`/`types` imports) with
-   esbuild into one self-contained ESM module.
-2. Rewrites the hoisted `export { client_default as default }` block into
-   `return client_default;` so the output is a valid function body that returns
-   the plugin.
-3. Asserts no module syntax remains and that the body ends with a `return`.
+The browser envelope is:
 
-The result is `dist/client.js`. It is a generated artifact — **do not edit it
-by hand**; edit `src/` and rebuild.
+```js
+window.__ModuleLoader__.load({ id, factory: (require) => { ... return module.exports } })
+```
 
-`src/builtins.d.ts` declares the injected `styles` builtin for type-checking;
-it emits no runtime code.
+`scripts/build.mjs` asserts the envelope, the exposed `apply`/`inject`, the
+absence of module syntax, and a zero-`require()` purity gate. `lib/` is
+generated — **do not edit it by hand**; edit `src/` and rebuild.
+
+`pnpm test` runs `scripts/client.test.mjs`. It evaluates the built
+`lib/client.js` through a fake `window.__ModuleLoader__` and drives it against a
+stand-in locale service.
 
 ## Editing the dictionaries
 
-All Japanese copy lives in `src/dictionaries.ts`, one typed constant per
-namespace, aggregated into `DICTS`. To add or revise a translation:
+Japanese copy lives in `src/client/dictionaries.ts`. Each dictionary is typed
+against its namespace's shipped key union, so a renamed, removed, or added DSH
+key is a compile-time error. Preserve placeholders such as `{name}` verbatim.
 
-1. Edit the relevant namespace constant (keys must match the shipped `zh`
-   dictionary exactly — they are the lookup keys).
-2. Preserve placeholders such as `{name}` verbatim.
-3. Run `mise run check`, then `mise run build`.
+Twenty-six of the 29 namespaces use unions from the owning package's shipped
+declarations. The three namespaces
+`directory-browser`, `permission.access`, and `trajectory` use documented local
+copies because their owning packages do not expose those unions through their
+`exports` maps; upstream drift in those three sets is not detected
+automatically.
+
+After editing a dictionary, run:
+
+```bash
+pnpm typecheck
+```
+
+This is both the dictionary correctness check and the DSH-upgrade drift check.
+
+## Testing against a real DSH
+
+Build a package tarball, install that tarball into the `web` profile, and start
+DSH:
+
+```bash
+pnpm build && pnpm pack
+dsh plugin --profile web add <absolute path to the tgz>
+dsh web
+```
+
+In the browser, open **Settings → Language** and choose **日本語**. The path
+to the tarball must be absolute because `pnpm` runs with its working directory
+set to the profile directory. Remove the local package with:
+
+```bash
+dsh plugin --profile web remove @fang2hou/dsh-locale-ja
+```
 
 ## Coding standards
 
@@ -93,7 +134,8 @@ namespace, aggregated into `DICTS`. To add or revise a translation:
   English. Only dictionary literal values (UI copy) are Japanese. No romaji or
   pinyin identifiers.
 - Follow the repository's engineering guideline (standardized toolchain,
-  Conventional Commits, root-cause fixes over suppression, no over-engineering).
+  Conventional Commits, root-cause fixes over suppression, no
+  over-engineering).
 - Prefer the smallest coherent change. Introduce abstractions only when they
   solve a real maintenance, correctness, or architecture problem.
 
@@ -102,7 +144,7 @@ namespace, aggregated into `DICTS`. To add or revise a translation:
 Before considering work complete:
 
 ```bash
-mise run check        # typecheck / lint / format-check / build
+mise run check        # typecheck / lint / format-check / build / test
 prek run --all-files  # run all pre-commit hooks
 ```
 
@@ -114,8 +156,11 @@ that architecture invariants (see `ARCHITECTURE.md`) still hold.
 Releases are published to the public npm registry by the `Release` workflow
 (`.github/workflows/release.yml`) on version tags, using **npm trusted
 publishing (OIDC)** — no npm token is stored as a secret. The published package
-contains the built `dist/client.js`; loading into DSH is unchanged (still
-`cordis_define` / `cordis_run`). See
+includes the plugin files `lib/index.js`, `lib/client.js`,
+`lib/types/**/*.d.ts`, and `cordis.patch.yml`. Install it into DSH with
+`dsh plugin --profile web add @fang2hou/dsh-locale-ja`; this installs the
+package and reconciles `dsh.profile.bundles` through DSH's standard
+client-module loader. See
 [ADR-0005](./docs/adr/0005-npm-distribution-channel.md).
 
 Trusted publishing requires npm CLI ≥ 11.5.1 and Node ≥ 22.14 (both met by the
@@ -135,8 +180,9 @@ exists** (there is no PyPI-style pre-claim). Bootstrap it once:
    npm publish --registry https://registry.npmjs.org
    ```
 
-2. On [npmjs.com](https://www.npmjs.com) → `@fang2hou/dsh-locale-ja` → Settings →
-   **Trusted publishing** → GitHub Actions, add a trusted publisher:
+2. On [npmjs.com](https://www.npmjs.com) →
+   `@fang2hou/dsh-locale-ja` → Settings → **Trusted publishing** → GitHub
+   Actions, add a trusted publisher:
    - Organization or user: `fang2hou`
    - Repository: `dsh-locale-ja`
    - Workflow filename: `release.yml`
