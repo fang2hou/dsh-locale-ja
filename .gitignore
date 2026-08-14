@@ -3,6 +3,7 @@ node_modules/
 
 # build output
 lib/
+dist/
 
 # logs
 *.log
@@ -23,3 +24,6 @@ Thumbs.db
 # misc
 coverage/
 *.tsbuildinfo
+
+# e2e
+e2e/.artifacts/

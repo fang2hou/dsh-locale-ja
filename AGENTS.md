@@ -20,6 +20,44 @@ UI only. Keep the standard package shape:
 Read [ARCHITECTURE.md](./ARCHITECTURE.md) and the relevant
 [ADRs](./docs/adr/) for the package boundaries and compatibility decisions.
 
+## DSH references and contract sources
+
+DSH iterates fast (developer preview). This plugin pins `0.1.0-rc.6`; when
+bumping, re-verify against the real runtime first. When developing outside a
+DSH session, rebuild context from these sources instead of guessing:
+
+Upstream repository: <https://github.com/deepseek-ai/deepseek-harness> (branch
+`master`). Product page: <https://deepseek.com/harness/en/>. npm:
+<https://www.npmjs.com/package/@deepseek-ai/dsh>.
+
+Key upstream docs (paths under the repo root):
+
+- `docs/development.md` — plugin development guide (client plugin build faces).
+- `docs/architecture.md` — profiles, plugin tree composition, Loader.
+- `docs/capability-seams.md` — Service / Event / Slot contract catalog.
+- `docs/config-catalog.md`, `docs/module-graph.md` — config keys, module graph.
+- `docs/cordis-primer.md` (plus `docs/cordis-tutorial/`, `docs/cordis-api/`) —
+  Cordis model the plugin is written against.
+- `docs/i18n/README.md` — how the locale service and dictionaries work (the
+  seam this plugin extends); `docs/i18n/translation-rules.md` and
+  `docs/i18n/terminology.md` — translation conventions for dictionary work.
+- `docs/testing.md` — upstream testing policy (tiered; browser E2E lane).
+- `docs/user/guide/index.md` — Web UI user guide (real UI flows).
+- `AGENTS.md` and `docs/AGENTS.md` — upstream agent guidance.
+
+Local ground truth (always prefer over memory or naming guesses):
+
+- CLI contracts: `dsh --help`, `dsh web --help`,
+  `dsh --profile web --dump-config` (composed plugin tree).
+- Shipped packages and type contracts: `node_modules/@deepseek-ai/*` in this
+  repo (devDependencies), or `$DSH_HOME/profiles/node_modules/@deepseek-ai/*`
+  from an installed profile (default `$DSH_HOME` = `~/.dsh`).
+- Profile state: `$DSH_HOME/profiles/web/package.json` (`dsh.profile.bundles`),
+  `cordis.patch.yml`, `settings.yaml`.
+- Real isolated DSH web for verification: `mise run e2e` (see DEVELOPMENT.md);
+  manual install into your own profile is documented in DEVELOPMENT.md →
+  "Testing against a real DSH".
+
 ## DSH plugin development rules
 
 - Query the real runtime capability and contract before relying on a DSH

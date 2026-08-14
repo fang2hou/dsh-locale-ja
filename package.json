@@ -53,7 +53,8 @@
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write --ignore-path=.oxfmtignore .",
-    "format:check": "oxfmt --check --ignore-path=.oxfmtignore ."
+    "format:check": "oxfmt --check --ignore-path=.oxfmtignore .",
+    "e2e": "node e2e/run-e2e.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
@@ -85,6 +86,7 @@
     "@deepseek-ai/dsh-client-ui-workflow-run": "^0.1.0-rc.6",
     "@deepseek-ai/dsh-client-ui-workspace": "^0.1.0-rc.6",
     "@deepseek-ai/dsh-session-log-export": "^0.1.0-rc.6",
+    "@playwright/test": "^1.62.1",
     "@types/node": "^22.10.0",
     "esbuild": "^0.28.0",
     "oxfmt": "^0.63.0",
