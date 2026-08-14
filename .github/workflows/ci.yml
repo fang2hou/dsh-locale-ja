@@ -30,13 +30,18 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-      - name: Checkout (full history)
+      # A pull_request checkout defaults to GitHub's synthetic merge commit,
+      # whose "Merge <sha> into <sha>" message is not a Conventional Commit.
+      # Check out the PR head so only real commits are validated, and ignore
+      # merge commits so a merge landing on main cannot break this job either.
+      - name: Checkout (full history, PR head)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install mise and tools
         uses: jdx/mise-action@v4
 
       - name: Validate commit history
-        run: cog check
+        run: cog check --ignore-merge-commits
