@@ -1,19 +1,136 @@
 /**
- * Japanese dictionaries for every shipped DeepSeek Harness locale namespace.
+ * Japanese dictionaries for every locale namespace DeepSeek Harness registers.
  *
- * Each value is translated to natural Japanese UI copy. Rules:
- *  - Placeholders such as `{name}`, `{count}`, `{model}` are preserved verbatim.
- *  - Brand/model/technical tokens (DeepSeek, Cordis, JSON, Host, Client,
- *    plan mode, Provider ID, ...) stay in their established form.
- *  - Wording follows AI-agent UX conventions (e.g. the trajectory/trace view).
+ * Each dictionary is typed against the namespace's own key union, taken from the
+ * owning package's shipped declarations, so a key the platform dropped, renamed,
+ * or added is a compile error rather than a string that silently falls back to
+ * Chinese. `pnpm typecheck` after a DSH upgrade is therefore the drift check.
  *
- * Source of truth for keys: each feature's shipped `zh` dictionary. Missing
- * namespaces fall back through the locale lookup chain (active -> zh -> common
- * -> raw key), so this is the complete, non-fallback Japanese coverage.
+ * Translation rules:
+ *  - `{name}`-style placeholders are preserved verbatim.
+ *  - Brand, model, and protocol tokens (DeepSeek, Cordis, JSON, Host, Client,
+ *    plan mode, Provider ID) keep their established form.
+ *  - Wording follows Japanese AI-agent UX conventions.
  */
-import type { LocaleDict } from "./types";
+/* oxlint-disable unicorn/require-module-specifiers --
+ * `import type {}` is the declaration-merging idiom: it pulls a package's
+ * `./client` declarations into the program, which is what merges its namespace
+ * into `LocaleNamespaceMap` and makes `LocaleDictOf<'...'>` resolve. There is
+ * nothing to name in the braces, and the import is erased at build time, so the
+ * bundle keeps zero runtime dependencies. */
+import type { LocaleDictOf } from "@deepseek-ai/dsh-client-ui-slots";
+// common, settings.locale
+import type {} from "@deepseek-ai/dsh-client-locale/client";
+// settings.agentPreset
+import type {} from "@deepseek-ai/dsh-client-ui-agent-preset/client";
+// command
+import type {} from "@deepseek-ai/dsh-client-ui-commands/client";
+// conversation
+import type {} from "@deepseek-ai/dsh-client-ui-conversation/client";
+// cordis
+import type {} from "@deepseek-ai/dsh-client-ui-cordis/client";
+// deliverables
+import type {} from "@deepseek-ai/dsh-client-ui-deliverables/client";
+// goal
+import type {} from "@deepseek-ai/dsh-client-ui-goal/client";
+// slash.menu
+import type {} from "@deepseek-ai/dsh-client-ui-input-trigger/client";
+// job
+import type {} from "@deepseek-ai/dsh-client-ui-jobs/client";
+// feedback
+import type {} from "@deepseek-ai/dsh-client-ui-message-feedback/client";
+// model
+import type {} from "@deepseek-ai/dsh-client-ui-model-selection/client";
+// settings.permission
+import type {} from "@deepseek-ai/dsh-client-ui-permission-presets/client";
+// plan
+import type {} from "@deepseek-ai/dsh-client-ui-plan/client";
+// settings
+import type {} from "@deepseek-ai/dsh-client-ui-settings-general/client";
+// settings.models
+import type {} from "@deepseek-ai/dsh-client-ui-settings-models/client";
+// settings.pluginInventory
+import type {} from "@deepseek-ai/dsh-client-ui-settings-plugin-inventory/client";
+// settings.plugins
+import type {} from "@deepseek-ai/dsh-client-ui-settings-plugins/client";
+// sidebar
+import type {} from "@deepseek-ai/dsh-client-ui-sidebar/client";
+// skill
+import type {} from "@deepseek-ai/dsh-client-ui-skill/client";
+// subagent
+import type {} from "@deepseek-ai/dsh-client-ui-subagent/client";
+// settings.theme
+import type {} from "@deepseek-ai/dsh-client-ui-theme/client";
+// question
+import type {} from "@deepseek-ai/dsh-client-ui-user-questions/client";
+// workflowRun
+import type {} from "@deepseek-ai/dsh-client-ui-workflow-run/client";
+// workspace
+import type {} from "@deepseek-ai/dsh-client-ui-workspace/client";
+// session-log-download
+import type {} from "@deepseek-ai/dsh-session-log-export/client";
 
-const common: LocaleDict = {
+/*
+ * Three namespaces cannot borrow their key union from the platform, so each is
+ * checked against a local copy of the shipped key set instead. `pnpm typecheck`
+ * cannot detect upstream drift for these three; the comment on each names the
+ * exact package and version the copy was taken from.
+ */
+
+/**
+ * `directory-browser` keys, from
+ * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.6`, which
+ * registers through the untyped overload and merges no namespace at all.
+ */
+type DirectoryBrowserKey =
+  | "browser.title"
+  | "browser.home"
+  | "browser.newFolder"
+  | "browser.folderName"
+  | "browser.createIn"
+  | "browser.untitledFolder"
+  | "browser.create"
+  | "browser.cancel"
+  | "browser.open"
+  | "browser.editPath"
+  | "browser.loading"
+  | "browser.truncated"
+  | "browser.showHidden";
+
+/**
+ * `permission.access` keys, from
+ * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.6`. `PermissionAccessKey`
+ * lives in a module that package's `./client` export does not re-export.
+ */
+type PermissionAccessKey =
+  | "confirm.title"
+  | "confirm.description"
+  | "confirm.acknowledge"
+  | "confirm.cancel"
+  | "confirm.enable";
+
+/**
+ * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.6`.
+ * Its `./client` export re-exports nothing, so neither `TrajectoryKey` nor its
+ * `LocaleNamespaceMap` merge is reachable.
+ */
+type TrajectoryKey =
+  | "view.trajectory"
+  | "toolbar.aria"
+  | "toolbar.duration"
+  | "toolbar.useActualDuration"
+  | "toolbar.useEqualWidth"
+  | "toolbar.actualTime"
+  | "toolbar.turns"
+  | "toolbar.expandTurns"
+  | "toolbar.collapseTurns"
+  | "toolbar.calls"
+  | "toolbar.expandCalls"
+  | "toolbar.collapseCalls"
+  | "toolbar.search"
+  | "toolbar.searchPlaceholder";
+
+const common: LocaleDictOf<"common"> = {
   ok: "OK",
   cancel: "キャンセル",
   close: "閉じる",
@@ -40,11 +157,11 @@ const common: LocaleDict = {
   truncated: "省略されています",
 };
 
-const settingsLocale: LocaleDict = {
+const settingsLocale: LocaleDictOf<"settings.locale"> = {
   "language.title": "言語",
 };
 
-const conversation: LocaleDict = {
+const conversation: LocaleDictOf<"conversation"> = {
   "view.chat": "チャット",
   "hint.plan": "タスクを記述して計画を生成",
   "hint.goal": "目標を入力すると、エージェントが継続的に実行します",
@@ -216,14 +333,14 @@ const conversation: LocaleDict = {
   "clock.ymd": "{y}年{m}月{d}日",
 };
 
-const sidebar: LocaleDict = {
+const sidebar: LocaleDictOf<"sidebar"> = {
   "session.new": "新規セッション",
   "session.new.label": "新規セッションを作成",
   "toggle.open": "サイドバーを開く",
   "toggle.collapse": "サイドバーを折りたたむ",
 };
 
-const model: LocaleDict = {
+const model: LocaleDictOf<"model"> = {
   "command.description": "この会話で使用するモデルを選択",
   "option.loadError": "カタログの読み込みに失敗しました：{message}",
   "trigger.fallback": "モデルを選択",
@@ -243,7 +360,7 @@ const model: LocaleDict = {
   "empty.efforts": "このモデルには推論レベルが設定されていません。",
 };
 
-const settings: LocaleDict = {
+const settings: LocaleDictOf<"settings"> = {
   trigger: "設定",
   title: "設定",
   close: "閉じる",
@@ -252,14 +369,14 @@ const settings: LocaleDict = {
   "general.nav": "一般設定",
 };
 
-const settingsTheme: LocaleDict = {
+const settingsTheme: LocaleDictOf<"settings.theme"> = {
   "appearance.title": "外観",
   "appearance.light": "ライト",
   "appearance.dark": "ダーク",
   "appearance.system": "システムに合わせる",
 };
 
-const feedback: LocaleDict = {
+const feedback: LocaleDictOf<"feedback"> = {
   "action.like": "良い回答",
   "action.likeActive": "評価を取り消す",
   "action.dislike": "問題のある回答",
@@ -274,7 +391,7 @@ const feedback: LocaleDict = {
   "error.generic": "フィードバックの保存に失敗しました",
 };
 
-const skill: LocaleDict = {
+const skill: LocaleDictOf<"skill"> = {
   "row.running": "skillを読み込み中",
   "row.failed": "skillの読み込みに失敗しました",
   "row.stopped": "skillの読み込みが中止されました",
@@ -282,7 +399,7 @@ const skill: LocaleDict = {
   "menu.userOnly": "ユーザーのみ",
 };
 
-const question: LocaleDict = {
+const question: LocaleDictOf<"question"> = {
   "error.incomplete": "まずこの質問を完了してください。",
   "error.unanswered": "オプションを選択するか、カスタム回答を入力してください。",
   "nav.prev": "前の質問",
@@ -298,7 +415,7 @@ const question: LocaleDict = {
   "plan.discuss": "チャットで相談する",
 };
 
-const sessionLogDownload: LocaleDict = {
+const sessionLogDownload: LocaleDictOf<"session-log-download"> = {
   "dialog.preparingTitle": "Sessionをエクスポート中",
   "dialog.preparingDescription":
     "現在のSession、子Session、添付ファイルを含むZIPファイルを準備しています。",
@@ -309,7 +426,7 @@ const sessionLogDownload: LocaleDict = {
   "dialog.commandFailed": "Sessionのエクスポートを開始できませんでした。",
 };
 
-const trajectory: LocaleDict = {
+const trajectory: Record<TrajectoryKey, string> = {
   "view.trajectory": "トレース",
   "toolbar.aria": "トレースツールバー",
   "toolbar.duration": "所要時間",
@@ -326,7 +443,7 @@ const trajectory: LocaleDict = {
   "toolbar.searchPlaceholder": "検索",
 };
 
-const settingsModels: LocaleDict = {
+const settingsModels: LocaleDictOf<"settings.models"> = {
   nav: "モデル",
   title: "モデル",
   intro: "各プロバイダーの API キーを入力すると、そのモデルを利用できます。",
@@ -431,7 +548,7 @@ const settingsModels: LocaleDict = {
   keyRequired: "続行するには API キーを入力してください。",
 };
 
-const settingsAgentPreset: LocaleDict = {
+const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
   title: "Agent プリセット",
   description:
     "以降に新規作成するセッションに適用されます。実行中のセッションは開始時のプリセットを維持します。",
@@ -495,7 +612,7 @@ const settingsAgentPreset: LocaleDict = {
   deleting: "削除しています…",
 };
 
-const command: LocaleDict = {
+const command: LocaleDictOf<"command"> = {
   "search.placeholder": "検索…",
   "search.aria": "オプションを絞り込み",
   "status.loading": "オプションを読み込み中…",
@@ -505,7 +622,7 @@ const command: LocaleDict = {
   "listbox.aria": "/{command} の一致項目",
 };
 
-const cordis: LocaleDict = {
+const cordis: LocaleDictOf<"cordis"> = {
   "row.defineTitle": "Cordis プラグインを登録",
   "row.runTitle": "Cordis プラグインを実行",
   "row.updateTitle": "Cordis プラグインを更新",
@@ -557,7 +674,7 @@ const cordis: LocaleDict = {
   "body.copied": "コピーしました",
 };
 
-const deliverables: LocaleDict = {
+const deliverables: LocaleDictOf<"deliverables"> = {
   "produced.label": "成果物",
   "produced.moreOne": "+ 1 個のファイル",
   "produced.more": "+ {count} 個のファイル",
@@ -565,7 +682,7 @@ const deliverables: LocaleDict = {
   "produced.showInFolder": "フォルダで表示",
 };
 
-const directoryBrowser: LocaleDict = {
+const directoryBrowser: Record<DirectoryBrowserKey, string> = {
   "browser.title": "ワークスペースディレクトリを選択",
   "browser.home": "ホーム",
   "browser.newFolder": "新規フォルダー",
@@ -581,7 +698,7 @@ const directoryBrowser: LocaleDict = {
   "browser.showHidden": "隠しファイルを表示",
 };
 
-const goal: LocaleDict = {
+const goal: LocaleDictOf<"goal"> = {
   "phase.active": "進行中の目標",
   "phase.paused": "一時停止中の目標",
   "phase.blocked": "ブロックされた目標",
@@ -595,7 +712,7 @@ const goal: LocaleDict = {
   "action.clear": "目標をクリア",
 };
 
-const job: LocaleDict = {
+const job: LocaleDictOf<"job"> = {
   "count.live.one": "{count} 件のバックグラウンドタスクを実行中",
   "count.live.other": "{count} 件のバックグラウンドタスクを実行中",
   "count.idle.one": "{count} 件のバックグラウンドタスク",
@@ -613,7 +730,7 @@ const job: LocaleDict = {
   "duration.title.done": "所要時間 {duration}",
 };
 
-const slashMenu: LocaleDict = {
+const slashMenu: LocaleDictOf<"slash.menu"> = {
   command: "コマンド",
   skill: "スキル",
   subagent: "サブエージェント",
@@ -621,7 +738,7 @@ const slashMenu: LocaleDict = {
   "suggestions.aria": "トリガー候補の提案",
 };
 
-const settingsPermission: LocaleDict = {
+const settingsPermission: LocaleDictOf<"settings.permission"> = {
   title: "権限",
   description: "新しいセッションのデフォルトの権限モードを選択",
   loading: "読み込み中",
@@ -634,7 +751,7 @@ const settingsPermission: LocaleDict = {
   "confirm.enable": "Full access を有効化",
 };
 
-const permissionAccess: LocaleDict = {
+const permissionAccess: Record<PermissionAccessKey, string> = {
   "confirm.title": "Full access を有効にしますか？",
   "confirm.description":
     "Full access を有効にすると、agent の確認ステップが減り、機密操作、ファイル変更、外部コマンドを含むより多くの操作を直接実行できるようになります。現在のタスクを信頼できる場合にのみ使用してください。",
@@ -643,14 +760,14 @@ const permissionAccess: LocaleDict = {
   "confirm.enable": "Full access を有効化",
 };
 
-const plan: LocaleDict = {
+const plan: LocaleDictOf<"plan"> = {
   "chip.on.aria": "plan mode はオンです。押してオフにします",
   "chip.on.title": "plan mode はオン — クリックしてオフにする（/plan off）",
   "chip.off.aria": "plan mode はオフです。押してオンにします",
   "chip.off.title": "plan mode はオフ — クリックしてオンにする（/plan）",
 };
 
-const settingsPluginInventory: LocaleDict = {
+const settingsPluginInventory: LocaleDictOf<"settings.pluginInventory"> = {
   tab: "プラグイン一覧",
   loading: "プラグインを読み込み中…",
   error: "プラグインを一時的に読み込めません。",
@@ -671,7 +788,7 @@ const settingsPluginInventory: LocaleDict = {
   unloading: "アンロード中",
 };
 
-const settingsPlugins: LocaleDict = {
+const settingsPlugins: LocaleDictOf<"settings.plugins"> = {
   nav: "プラグイン",
   title: "プラグイン",
   intro: "このデプロイにインストール済みのプラグインを設定・確認します。",
@@ -711,7 +828,7 @@ const settingsPlugins: LocaleDict = {
   webSearchMaxUsesHint: "回答前に1リクエストで実行できる検索の最大回数。",
 };
 
-const subagent: LocaleDict = {
+const subagent: LocaleDictOf<"subagent"> = {
   "diagnostic.corrupt": "セッションレコードが破損しています",
   "diagnostic.unsupported": "サポートされていないサブエージェントレコードのバージョンです",
   "diagnostic.unavailable": "セッションレコードは一時的に利用できません",
@@ -749,7 +866,7 @@ const subagent: LocaleDict = {
     "親セッションが現在オフラインです。親セッションを再度開くとメッセージの送信を再開できます。",
 };
 
-const workflowRun: LocaleDict = {
+const workflowRun: LocaleDictOf<"workflowRun"> = {
   "run.title": "{name}",
   "run.members.one": "{count} メンバー",
   "run.members.other": "{count} メンバー",
@@ -770,7 +887,7 @@ const workflowRun: LocaleDict = {
   "status.interrupted": "中断済み",
 };
 
-const workspace: LocaleDict = {
+const workspace: LocaleDictOf<"workspace"> = {
   "group.ungrouped": "未グループ化",
   "session.new": "新規セッション",
   "section.workspaces": "ワークスペース",
@@ -840,7 +957,7 @@ const workspace: LocaleDict = {
  * All Japanese namespace dictionaries, keyed by locale namespace.
  * Registered as the `ja` locale for each namespace.
  */
-export const DICTS: Record<string, LocaleDict> = {
+export const DICTS: Record<string, Record<string, string>> = {
   common,
   "settings.locale": settingsLocale,
   conversation,

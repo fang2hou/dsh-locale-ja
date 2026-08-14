@@ -1,104 +1,113 @@
 # dsh-locale-ja
 
-> 向 DeepSeek Harness 注入 **日语 (日本語)** 界面的插件。
+> 为 DeepSeek Harness 添加 **日语 (日本語)** 界面的标准客户端插件包。
 
 [English](./README.en.md) · **中文** · [日本語](./README.md)
 
-`dsh-locale-ja` 是一个动态 Cordis 插件，扩展了 DeepSeek Harness 客户端的 locale 服务，让 **日本語** 与内置的 **中文**、**English** 并列可选。在「设置 → 语言」中选择日语，整个界面会切换为自然的日语。
-
 ---
 
-## 概述
+## 功能
 
-DSH 出厂只提供 `zh` / `en` 两个 locale。本插件把日语补齐为完整的一级界面语言：
+本包在 DSH 内置的 **中文** 和 **English** 之外，加入 **日本語** 作为可选择的界面语言。
 
-- **日语可选** — 在语言选择器中加入「日本語」，切换方式与中文/英文完全一致。
-- **全量覆盖** — 翻译全部出厂 locale 命名空间（约 700 条字符串）：对话与输入框、侧边栏、工作区、模型选择、各项设置、目标、计划、子代理、工作流、轨迹视图等。
-- **系统日语字体** — 仅在日语激活时，把字体栈切换为系统自带的日语字体（macOS/iOS 的 Hiragino、Windows 的游ゴシック/Meiryo、其余平台的 Noto Sans JP），让汉字假名以日语字形渲染。
-- **持久化** — 日语选择保存在浏览器中，刷新页面后仍然生效。
-- **完全可逆** — 停止 / 更新 / 卸载插件时，会还原字典注册、字体、语言列表与 `setLocale` 钩子。
+- **可选择日语** — 覆盖 29 个命名空间，包含约 693 条日语字符串。
+- **使用日语系统字体** — 日语激活期间，界面使用操作系统自带的日语系统字体。
+- **持久保存选择** — 选择保存在浏览器中，刷新页面后仍会保留。
+- **完全可逆** — 停止、更新或移除插件时，会恢复 DSH 原有的字典、字体和语言行为。
 
-## 工作原理（简述）
+## 状态
 
-- locale 服务没有「新增可选语言」的公开 API，因此插件通过运行时自身的内部字段（`snapshot` / `publish` / `adopt`）安全地扩展。详见 [ARCHITECTURE.md](./ARCHITECTURE.md) 与 [ADR](./docs/adr)。
-- 宿主侧的 locale 设置 schema 只接受 `zh|en`，因此 `ja` 的偏好改用 `localStorage` 持久化。
-- 字体通过覆盖 `--dsw-font-family`（所有排版样式的基点）来实现级联生效。
+当前为预发布版本 `0.2.0`。目标平台是 DSH `0.1.0-rc.6`，仅支持 `web` profile。由于插件通过 locale 服务的内部成员进行扩展，升级 DSH 后必须重新验证。
+
+> npm 上已发布的 `0.1.0` 是旧方案的产物，需要把代码粘贴到 `cordis_define` 中加载。要作为标准插件包安装，请使用 `0.2.0` 及以后的版本。
 
 ## 环境要求
 
-- 可运行 DeepSeek Harness 的环境
-- 开发/构建：Node.js 24+、pnpm 11+、[mise](https://mise.jdx.dev/)（推荐）
+- 已安装 DSH `0.1.0-rc.6`
+- `pnpm` 可在 PATH 中直接执行（`dsh plugin` 会把操作转发给 `pnpm`）
+- 仅从源码构建时需要：Node.js 24+、pnpm 11+ 和 [mise](https://mise.jdx.dev/)
 
 ## 安装
 
-构建产物 `dist/client.js` 可通过 npm 安装或从源码构建获取。
+### 安装已发布的包
 
-### 通过 npm 安装
-
-```bash
-pnpm add @fang2hou/dsh-locale-ja   # 或 npm install / yarn add / bun add
-```
-
-安装后，将 `node_modules/@fang2hou/dsh-locale-ja/dist/client.js` 的内容载入 DSH（见下一节）。
-
-### 从源码构建
+使用以下两个命令完成安装并启动：
 
 ```bash
-git clone https://github.com/fang2hou/dsh-locale-ja.git
-cd dsh-locale-ja
-mise install          # 准备 Node / pnpm / cocogitto / prek（使用 mise 时）
-pnpm install
-pnpm build            # => 生成 dist/client.js
+dsh plugin --profile web add @fang2hou/dsh-locale-ja
+dsh web
 ```
 
-不使用 mise 时，准备好 Node 24+ 与 pnpm，执行 `pnpm install && pnpm build` 即可。
+`dsh plugin` 是 `pnpm` 的转发器。首次使用时，它会初始化 `$DSH_HOME/profiles/web`（`$DSH_HOME` 默认为 `~/.dsh`），以该 profile 目录作为工作目录执行安装，并同步 `dsh.profile.bundles`。
 
-## 载入 DSH
+移除插件：
 
-把获取到的 `dist/client.js` 的**全部内容**作为一个动态插件的 `code.client` 注册并激活。最可靠的方式是让 DSH 的 agent 来完成：
-
-```
-请用 dist/client.js 的内容定义并运行一个 Cordis 插件。
+```bash
+dsh plugin --profile web remove @fang2hou/dsh-locale-ja
 ```
 
-agent 会调用 `cordis_define`（新插件，`code.client` = 文件内容）→ `cordis_run`。首次运行需要你在运行卡片上授权该客户端插件。
+### 开发时安装本地构建
 
-> 说明：DSH 目前没有「免前端重建安装第三方客户端插件」的入口，因此本插件的运行形态是动态插件（`cordis_define` / `cordis_run`）。详见 [ADR-0001](./docs/adr/0001-build-target-is-the-dynamic-plugin-artifact.md)。
+在仓库根目录构建并打包，然后添加生成的 tarball：
 
-## 验证
+```bash
+mise install && pnpm install
+pnpm build && pnpm pack
+dsh plugin --profile web add /absolute/path/to/fang2hou-dsh-locale-ja-<version>.tgz
+```
 
-打开「设置 → 语言」选择 **日本語**。整个界面切换为日语，字体也变为日语样式。切回 中文 / English 依然正常。
+必须使用 tarball 的绝对路径。`dsh plugin` 会把 profile 目录设为 `pnpm` 的工作目录，因此相对路径会在那里解析，而不是在仓库目录中解析。
+
+## 使用
+
+打开 **Settings → Language**（**设置 → 语言**），选择 **日本語**。整个界面会切换为日语，并启用日语系统字体栈。刷新页面后选择仍会保留，也可以随时切回中文或 English。
+
+## 工作原理
+
+实现边界和设计决策详见 [ARCHITECTURE.md](./ARCHITECTURE.md) 与 [ADR](./docs/adr/)。
+
+- **Host half** — 提供一个空的 `apply()` Loader 入口；`cordis.patch.yml` 中的 bundle patch 插入 `locale-ja` 行，并将本包挂载为 profile bundle。
+- **browser half** — 由 `dsh.client` 清单发现，再由 DSH 提供给浏览器。
+- **字典键的编译期校验** — 每个字典都按所属命名空间发布的键集合进行类型约束，因此键被重命名、删除或新增时会产生编译错误。
+- **可选择语言的接入** — rc.6 没有用于此目的的公开 API，因此插件使用 locale 运行时自身的内部成员。
+- **`ja` 的持久化** — Host 设置 schema 只接受 `zh|en`，所以日语偏好保存在 `localStorage` 中。
+- **字体覆盖** — 日语激活期间，仅覆盖 locale 作用域内 `:root` 的单个 token `--dsw-font-family`，提供日语字体栈。
 
 ## 项目结构
 
 ```text
 src/
-  client.ts         插件入口（默认导出）
-  dictionaries.ts   全部命名空间的日语字典
-  types.ts          围绕 locale 服务的最小类型定义
-  builtins.d.ts     DSH 客户端内置符号的 ambient 声明
+  index.ts                         Host half 与空的 apply() 入口
+  client/
+    index.ts                       browser half 入口（inject 与 apply）
+    locale-extension.ts            将日语接入 locale 运行时
+    preference.ts                  管理 localStorage 中的语言选择
+    font.ts                        管理 locale 作用域内的日语字体 token 覆盖
+    dictionaries.ts                定义 29 个命名空间的日语字典
 scripts/
-  build.mjs         将 TS 打包成单一的自包含函数体产物
-docs/adr/           架构决策记录
+  build.mjs                        构建并验证输出
+  client.test.mjs                  验证构建后的 browser half
+cordis.patch.yml                   profile bundle 使用的 bundle patch
+docs/adr/                          架构决策记录
 ```
 
 ## 开发
 
-开发流程、工具链与任务清单见 [DEVELOPMENT.md](./DEVELOPMENT.md)，贡献规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
+开发流程、工具链和任务见 [DEVELOPMENT.md](./DEVELOPMENT.md)，贡献规范见 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ```bash
-mise run check   # 一次性执行 类型检查 / lint / 格式检查 / 构建
+mise run check   # 类型检查 + lint + format-check + build + test
 ```
 
 ## 语言策略
 
-| 对象       | 语言                                          |
-| ---------- | --------------------------------------------- |
-| 产品 UI    | 日语（默认）、中文、英文（DSH 的 locale）     |
-| 源代码     | 英语（标识符、注释、配置）                    |
-| 对话       | 使用者的语言                                  |
+| 对象       | 语言                                  |
+| ---------- | ------------------------------------- |
+| 产品 UI    | 日语（默认）、中文、English            |
+| 源代码     | 英语（标识符、注释、配置）             |
+| 对话       | 使用者的语言                          |
 
-只有字典的字面量（UI 文案）是日语；所有标识符与注释均为英语。
+只有字典字面量（UI 文案）使用日语；所有标识符和注释均使用英语。
 
 ## 许可证
 

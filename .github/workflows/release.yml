@@ -1,16 +1,19 @@
 name: Release
 
-# Publishes the built client-plugin artifact to the public npm registry when a
-# version tag (`v*`) is pushed, using npm trusted publishing (OIDC). No npm
-# token is stored as a secret. Loading into DSH is unchanged (still
-# `cordis_define` / `cordis_run`); npm is a distribution channel only
-# (see docs/adr/0005).
+# Publishes the plugin package to the public npm registry when a version tag
+# (`v*`) is pushed, using npm trusted publishing (OIDC). No npm token is stored
+# as a secret.
 #
-# Prerequisite: a trusted publisher for `@fang2hou/dsh-locale-ja` must be configured on
-# npmjs.com (package Settings → Trusted publishing → GitHub Actions) pointing
-# at this repository and this workflow filename (`release.yml`). npm trusted
-# publishing requires the package to already exist, so the first version is
-# published manually once — see DEVELOPMENT.md → Releasing.
+# npm is the install channel, not just distribution: users install with
+# `dsh plugin --profile web add @fang2hou/dsh-locale-ja`, which reconciles the
+# package into the profile's bundle list (see docs/adr/0005).
+#
+# Prerequisite: a trusted publisher for `@fang2hou/dsh-locale-ja` must be
+# configured on npmjs.com (package Settings -> Trusted publishing -> GitHub
+# Actions) pointing at this repository and this workflow filename
+# (`release.yml`). npm trusted publishing requires the package to already
+# exist, so the first version is published manually once — see
+# DEVELOPMENT.md -> Releasing.
 #
 # Requires npm CLI >= 11.5.1 (Node 24, provisioned by mise, satisfies this).
 # Provenance is attached automatically by trusted publishing (no flag needed).

@@ -5,45 +5,45 @@
 
 ## Context
 
-The client `locale` service (`LocaleRuntime`) exposes `register(ns, locale,
-dict)` to add dictionaries and `setLocale(id)` to switch the active locale. It
-does **not** expose any public method to add a new *selectable* locale:
+In DSH `0.1.0-rc.6`, the client `locale` service can register dictionaries
+and switch locales, but it has no public way to add a selectable locale:
 
-- The selectable list is the frozen `snapshot.locales`, seeded with the two
-  shipped locales.
-- `setLocale(id)` throws if `id` is not in `snapshot.locales`.
-- `register(...)` only adds dictionaries; it does not extend `snapshot.locales`.
+- `LOCALE_IDS` is frozen as `['zh','en']`.
+- The selectable-list state is held in a private `snapshot`.
+- `setLocale(id)` rejects an id that is not already selectable.
 
-So registering `ja` dictionaries alone is insufficient — the user could never
-select Japanese, and `setLocale('ja')` would throw.
+Registering Japanese dictionaries alone therefore cannot make 日本語 appear in
+the language selector.
 
 ## Decision
 
-Drive the locale service through the same internal fields the runtime itself
-uses, all reversible on teardown:
+Extend the service through the same internal fields used by the runtime:
 
-- Reassign `locale.snapshot` to a new frozen snapshot whose `locales` includes
-  `ja`.
-- Call `locale.publish(active, true)` to bump the revision and refresh outlets
-  (the Language row re-syncs on the `locale/change` event).
-- Override `locale.setLocale` to validate against the (now extended) locale
-  list and skip the host write for the injected locale.
-- Override `locale.adopt` so a host-preference sync never reverts the UI off an
-  injected locale.
+- Reassign `locale.snapshot` to a frozen snapshot whose locales include `ja`.
+- Call `locale.publish(active, true)` to bump the revision and refresh outlets.
+- Wrap `locale.setLocale` for the injected locale and wrap `locale.adopt` so a
+  host-preference sync cannot revert an injected locale.
 
-These internals are intentionally part of the local `src/types.ts` contract.
+The only module that contacts these internals is
+`src/client/locale-extension.ts`, behind one narrow typed view. A runtime
+capability check fails loudly with a clear message when an incompatible DSH no
+longer provides the expected fields or shapes. The shipped client bundles are
+unminified, so `snapshot`, `publish`, and `adopt` survive publication verbatim.
 
 ## Alternatives considered
 
-- **Patch the shipped `dsh-client-locale` package.** Rejected: mutates shipped
-  code, breaks on upgrade, and is not shareable.
-- **Register dictionaries only and accept that Japanese is unreachable.**
-  Rejected: does not meet the requirement.
+- **Patch the shipped `dsh-client-locale` package.** Rejected: it mutates
+  shipped code, breaks on upgrade, and is not shareable.
+- **Register dictionaries only.** Rejected: Japanese remains unreachable from
+  the selector and `setLocale('ja')` rejects it.
 
 ## Consequences
 
-- The plugin depends on the field names `snapshot`, `publish`, `adopt`, and
-  `host` of `LocaleRuntime`. On a DSH locale-package upgrade, re-verify these
-  names against the shipped bundle and update `src/types.ts` if needed.
-- All overrides are restored on teardown, so stopping the plugin returns the
-  service to its shipped state.
+- The plugin is coupled to the runtime member names and shapes
+  `snapshot`, `publish`, `setLocale`, and `adopt`. Every DSH upgrade requires
+  re-verifying them against the shipped bundle; the runtime check is the
+  compatibility guard.
+- All overrides are restored through `ctx.effect` teardown, returning the
+  service to its shipped behavior when the plugin stops or is removed.
+- Persistence behavior for the injected locale is defined in
+  [ADR-0003](./0003-client-side-persistence-for-the-injected-locale.md).

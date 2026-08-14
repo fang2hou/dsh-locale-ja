@@ -4,22 +4,31 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "types": ["node"],
+    "types": [],
+
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "exactOptionalPropertyTypes": false,
-    "noEmit": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // The build emits JavaScript with esbuild; tsc owns declarations only.
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "lib/types",
+    "rootDir": "src",
+
+    // In-package relative imports carry explicit `.ts` specifiers (the DSH
+    // convention); only a declaration-only emit may resolve them.
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
     "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
-    "verbatimModuleSyntax": false
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "scripts", "*.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"]
 }
