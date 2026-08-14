@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   validate:
-    name: typecheck / lint / format / build
+    name: typecheck / lint / format / build / test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: mise run install
 
-      - name: Check (typecheck, lint, format-check, build)
+      - name: Check (typecheck, lint, format-check, build, test)
         run: mise run check
 
   conventional-commits:
