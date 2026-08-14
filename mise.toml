@@ -40,6 +40,10 @@ description = "Run the browser-bundle integration test (requires a fresh build).
 depends = ["build"]
 run = "pnpm test"
 
+[tasks.e2e]
+description = "Run the Docker + Playwright E2E suite against a real DSH web (requires Docker)."
+run = "pnpm e2e"
+
 [tasks.check]
 description = "Run the full local validation workflow (typecheck, lint, format, build, test)."
 depends = ["typecheck", "lint", "format-check", "build", "test"]

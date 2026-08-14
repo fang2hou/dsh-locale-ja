@@ -110,6 +110,26 @@ pnpm typecheck
 
 This is both the dictionary correctness check and the DSH-upgrade drift check.
 
+## E2E testing (Docker + Playwright, no local install needed)
+
+`mise run e2e` verifies the plugin against a real, isolated DSH web:
+
+1. builds the package tarball from the current source (`pnpm pack`),
+2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.0-rc.6`
+   (`e2e/Dockerfile`),
+3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`,
+4. drives the real UI with Playwright from the host in three phases —
+   baseline (no plugin), installed (日本語 selectable, applies, persists,
+   reverses), removed (back to English, menu back to 中文/English),
+5. installs/removes the plugin between phases via
+   `dsh plugin --profile web add/remove` inside the container, and
+   tears everything down.
+
+Prerequisites: a running Docker daemon (OrbStack/Docker Desktop), and
+one-time `pnpm exec playwright install chromium`. CI runs the same suite on
+every PR (`e2e` job) and gates releases on it. It is deliberately not part of
+`mise run check` or any git hook.
+
 ## Testing against a real DSH
 
 Build a package tarball, install that tarball into the `web` profile, and start

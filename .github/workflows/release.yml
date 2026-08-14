@@ -44,6 +44,18 @@ jobs:
       - name: Check (typecheck / lint / format / build / test)
         run: mise run check
 
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browser (chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E against real DSH web (Docker + Playwright)
+        run: mise run e2e
+
       # Tokenless: npm CLI (>= 11.5.1) auto-detects the GitHub Actions OIDC
       # environment and exchanges it for a short-lived publish credential.
       - name: Publish to npm (trusted publishing / OIDC)

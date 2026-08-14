@@ -5,6 +5,15 @@
     "suspicious": "warn",
     "perf": "warn"
   },
+  "overrides": [
+    {
+      "files": ["e2e/**"],
+      "rules": {
+        // E2E phase flows and readiness polling are sequential by design.
+        "no-await-in-loop": "off"
+      }
+    }
+  ],
   "rules": {
     "no-console": "off"
   },
