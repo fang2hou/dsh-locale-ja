@@ -22,8 +22,9 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
 ## Issue workflow
 
 - Search existing issues before opening a new one.
-- For translation fixes, name the affected namespace and key and the preferred
-  Japanese wording (and why it is better for an AI-agent UI).
+- For translation fixes, edit `src/client/dictionaries.ts`; name the affected
+  namespace and key, the preferred Japanese wording (and why it is better for
+  an AI-agent UI), and run `pnpm typecheck` to validate the namespace keys.
 - For bugs, include the DSH version, the active locale, and reproduction steps.
 
 ## Pull request workflow
@@ -34,7 +35,7 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
 3. Validate locally:
 
    ```bash
-   mise run check        # typecheck / lint / format-check / build
+   mise run check        # typecheck / lint / format-check / build / test
    prek run --all-files
    ```
 
@@ -46,7 +47,8 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
 The PR description must clearly include:
 
 - **Purpose** — what the change does and why.
-- **Impact** — what is affected (UI copy, build, runtime behavior).
+- **Impact** — what is affected (UI copy, package build artifacts, runtime
+  behavior).
 - **Context** — relevant background or linked issues.
 - **Risks** — any concerns or behavioral changes.
 - **Testing** — validation performed (`mise run check` output, manual checks,
@@ -68,7 +70,7 @@ validated by cocogitto:
 feat(core): add a namespace dictionary
 fix(font): keep override scoped to the active locale
 docs(readme): clarify the load flow
-refactor(build): simplify the export-to-return transform
+refactor(build): tighten the client-bundle purity gate
 ```
 
 - Use meaningful types: `feat`, `fix`, `docs`, `refactor`, `test`, `build`,
@@ -82,7 +84,8 @@ refactor(build): simplify the export-to-return transform
 
 - The change implements the requested behavior.
 - `mise run check` and prek pass.
-- No unintended files, dependencies, or secrets.
+- No unintended files, dependencies, secrets, or direct edits to generated
+  `lib/` output.
 - Architecture invariants still hold.
 - Code language is English (only UI copy literals are Japanese); UI copy is
   natural Japanese, not machine-translated or Chinese-influenced wording.

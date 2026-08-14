@@ -5,35 +5,45 @@
 
 ## Context
 
-The shipped base font stack `--dsw-font-family` is Chinese-leaning
-(`PingFang SC`, `Microsoft YaHei`, `Hiragino Sans GB`, …). Because the same CJK
-codepoints are shared across languages, Japanese text rendered with these fonts
-uses Chinese-style glyphs — the interface reads as Japanese but *looks* Chinese.
+The shipped base font stack `--dsw-font-family` is Chinese-leaning. Because
+the same CJK codepoints are shared across languages, Japanese text rendered
+with that stack uses Chinese-style glyphs.
 
-Every typography style token (e.g. `--dsw-font-base-16-font-family`) reads
-`var(--dsw-font-family)`, so the base token is the single leverage point.
+Every typography style token (for example,
+`--dsw-font-base-16-font-family`) reads `var(--dsw-font-family)`, making the
+base token the single leverage point. The `styles` builtin is available only
+to dynamic plugins, not standard packages, so this plugin must own its
+stylesheet.
 
 ## Decision
 
-While the active locale is `ja`, insert one stylesheet that overrides
-`--dsw-font-family` on `:root` with a Japanese-first system-font stack (Hiragino
-on macOS/iOS, Yu Gothic UI / Meiryo on Windows, Noto Sans JP elsewhere), with
-Latin system UI fonts first so Latin text keeps the native UI font. Remove the
-stylesheet when the locale is not `ja`.
+While `ja` is active, create one plugin-owned style tag:
 
-The override reacts to locale changes via `locale.subscribe(syncFont)`.
+```html
+<style data-plugin="@fang2hou/dsh-locale-ja" data-plugin-css="...">
+```
+The tag overrides `--dsw-font-family` on `:root` with Latin system UI faces
+followed by an OS-bundled Japanese-first stack using Hiragino, Yu Gothic,
+Meiryo, and Noto Sans JP. No web font is fetched. Insert the tag only while
+`ja` is active and
+remove it for other locales; synchronize it with locale changes.
+
+The `data-plugin` / `data-plugin-css` attributes follow the convention used by
+shipped CSS-module bundles. The contribution is registered through
+`ctx.effect`, so teardown removes the tag and restores the shipped behavior.
 
 ## Alternatives considered
 
-- **`theme.overrideTokens`.** Rejected: heavier; requires paired light/dark
-  values and targets the global theme rather than a single locale-scoped rule.
-- **Per-element `font-family`.** Rejected: does not cascade through the many
-  components that set their own font.
-- **Replacing the global theme.** Rejected: overreaching; affects all locales.
+- **`theme.overrideTokens`.** Rejected: heavier, requires paired light/dark
+  values, and targets the global theme rather than a locale-scoped rule.
+- **Per-element `font-family`.** Rejected: it does not cascade through the
+  many components that set their own font.
+- **Replacing the global theme.** Rejected: it overreaches and affects every
+  locale.
 
 ## Consequences
 
-- Latin characters keep the OS UI font; CJK characters render in Japanese style
-  only while Japanese is active.
-- A single stylesheet toggle owns the effect, applied and removed with the
-  locale, and is reversed on teardown.
+- Latin text keeps the OS UI font while CJK characters use Japanese glyphs
+  only when Japanese is active.
+- One locale-scoped stylesheet owns the effect, avoids a network dependency,
+  and is reversed on locale changes, plugin updates, or removal.
