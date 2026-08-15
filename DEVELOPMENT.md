@@ -226,19 +226,20 @@ no local npm credentials: pushing the tag is the whole release.
 
 ### Routine releases
 
+The pushed `v*` tag is the single source of truth for the version — the
+workflow stamps `package.json` from it before publishing, so no manual bump is
+required and a tag can never ship a stale version.
+
 ```bash
-# 1. bump the version (package.json is the single source of truth)
-$EDITOR package.json            # "version": "0.X.Y"
+# 1. commit any pending changes (Conventional Commits — validated by the cog
+#    commit-msg hook)
 
-# 2. commit (Conventional Commits — validated by the cog commit-msg hook)
-git add package.json
-git commit -m "chore(release): v0.X.Y"
-
-# 3. tag and push
+# 2. tag and push
 git tag vX.Y.Z
 git push origin main --tags
 ```
 
-Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`,
-builds, and publishes via OIDC (provenance is attached automatically). Confirm
-at <https://www.npmjs.com/package/@fang2hou/dsh-locale-ja>.
+Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`
+and the E2E suite, sets the package version from the tag, and publishes via
+OIDC (provenance is attached automatically). Confirm at
+<https://www.npmjs.com/package/@fang2hou/dsh-locale-ja>.
