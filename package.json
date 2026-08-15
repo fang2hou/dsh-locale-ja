@@ -54,7 +54,9 @@
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "e2e": "node e2e/run-e2e.ts"
+    "e2e:latest": "DSH_E2E_DSH_VERSION=latest node e2e/run-e2e.ts",
+    "e2e": "node e2e/run-e2e.ts",
+    "drift": "node scripts/check-dict-drift.ts"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
