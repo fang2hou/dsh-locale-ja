@@ -42,7 +42,8 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
    [PR template](./.github/pull_request_template.md) and fill in every
    section; state AI assistance explicitly when it applies. The PR title
    follows Conventional Commits because squash merging makes it the final
-   commit message.
+   commit message; CI validates it on open and on every title edit
+   (`.github/workflows/pr-title.yml`).
 
 ## Commits
 

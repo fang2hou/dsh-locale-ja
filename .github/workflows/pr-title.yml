@@ -1,0 +1,35 @@
+name: PR title
+
+# Squash merge is the only merge method, and the repository is configured with
+# squash_merge_commit_title = PR_TITLE: the PR title becomes the subject line
+# of the commit that lands on main. This workflow validates that title — not
+# the PR's commit history, which the squash discards.
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-pr-title:
+    name: PR title (conventional commits)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (mise.toml + cog.toml)
+        uses: actions/checkout@v4
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      # The title is untrusted input: pass it through env, never interpolate
+      # it into the script text.
+      - name: Validate PR title (becomes the squash-merge commit on main)
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: cog verify "$PR_TITLE"

@@ -39,6 +39,8 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
 - **Bundler**: esbuild (`scripts/build.ts`); it also emits declarations through
   TypeScript.
 - **Commits**: Conventional Commits, validated by cocogitto (`cog`) and prek.
+- **PR titles**: the title becomes the squash-merge commit subject on `main`;
+  CI validates it with `cog verify` (`.github/workflows/pr-title.yml`).
 - **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus
   a `commit-msg` hook that runs `cog verify`.
 
