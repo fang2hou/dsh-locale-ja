@@ -9,10 +9,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     name: typecheck / lint / format / build / test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,6 +35,7 @@ jobs:
   conventional-commits:
     name: conventional commits (cocogitto)
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: github.event_name == 'pull_request'
     steps:
       # A pull_request checkout defaults to GitHub's synthetic merge commit,
@@ -46,6 +53,22 @@ jobs:
 
       - name: Validate commit history
         run: cog check --ignore-merge-commits
+
+  secret-scan:
+    name: secret scanning (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install mise and tools
+        uses: jdx/mise-action@v4
+
+      - name: Scan commit history for secrets (gitleaks)
+        run: gitleaks git . --redact --no-banner
 
   e2e:
     name: e2e (docker dsh web + playwright)
