@@ -46,15 +46,15 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "node scripts/build.mjs",
-    "prepack": "node scripts/build.mjs",
-    "test": "node scripts/client.test.mjs",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "node scripts/build.ts",
+    "prepack": "node scripts/build.ts",
+    "test": "node scripts/client.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tools.json",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "e2e": "node e2e/run-e2e.mjs"
+    "e2e": "node e2e/run-e2e.ts"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",

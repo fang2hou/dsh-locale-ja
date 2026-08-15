@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { installPlugin, removePlugin, restartAndWait } from "./harness.mjs";
+import type { Page } from "@playwright/test";
+import { installPlugin, removePlugin, restartAndWait } from "./harness.ts";
 
 const BASE = process.env.DSH_BASE_URL ?? "http://127.0.0.1:3080";
 const FONT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-font.css"]';
 
-async function dismissOnboarding(page) {
+async function dismissOnboarding(page: Page) {
   // Onboarding dialogs (Internal Testing Notice, API-key setup) block the
   // whole UI, and their labels follow the active locale — English by default,
   // Japanese once this plugin is active. They mount sequentially, and on a
@@ -26,18 +27,18 @@ async function dismissOnboarding(page) {
   }
 }
 
-async function openSettings(page, triggerLabel) {
+async function openSettings(page: Page, triggerLabel: string) {
   await page.getByRole("button", { name: triggerLabel, exact: true }).click();
   await page.getByRole("dialog").waitFor();
 }
 
-async function openLanguageMenu(page, activeLabel) {
+async function openLanguageMenu(page: Page, activeLabel: string) {
   // The language pill button shows the active label.
   await page.getByRole("button", { name: activeLabel, exact: true }).click();
   await page.getByRole("menu").waitFor();
 }
 
-async function menuItems(page) {
+async function menuItems(page: Page) {
   // The menu renders in a portal, so query at page level.
   const items = await page.getByRole("menuitem").allInnerTexts();
   return items.map((t) => t.trim()).toSorted();

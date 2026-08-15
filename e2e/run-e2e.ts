@@ -13,7 +13,7 @@ import {
   stopContainer,
   pickFreePort,
   CONTAINER,
-} from "./harness.mjs";
+} from "./harness.ts";
 
 // Refuse to run without a Docker daemon.
 const probe = spawnSync("docker", ["info"], { stdio: "ignore" });
@@ -30,7 +30,7 @@ execFileSync("pnpm", ["pack", "--pack-destination", packDir], { stdio: "inherit"
 const tarball = fs
   .readdirSync(packDir)
   .find((name) => /^fang2hou-dsh-locale-ja-.*\.tgz$/.test(name));
-if (!tarball) throw new Error(`no tarball found in ${packDir}`);
+if (tarball === undefined) throw new Error(`no tarball found in ${packDir}`);
 const tarballPath = path.join(packDir, tarball);
 
 let exitCode = 1;

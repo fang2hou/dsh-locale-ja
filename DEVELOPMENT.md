@@ -34,8 +34,9 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
   `.oxlintrc.json`). No ESLint.
 - **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config:
   `.oxfmtrc.json`). No Prettier.
-- **Type checker**: `tsc --noEmit` (config: `tsconfig.json`).
-- **Bundler**: esbuild (`scripts/build.mjs`); it also emits declarations through
+- **Type checker**: `tsc --noEmit` (configs: `tsconfig.json` for `src/`,
+  `tsconfig.tools.json` for `scripts/` and `e2e/`).
+- **Bundler**: esbuild (`scripts/build.ts`); it also emits declarations through
   TypeScript.
 - **Commits**: Conventional Commits, validated by cocogitto (`cog`) and prek.
 - **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus
@@ -51,7 +52,7 @@ mise run typecheck      # tsc --noEmit
 mise run lint           # oxlint .
 mise run format         # oxfmt --write .
 mise run format-check   # oxfmt --check .
-mise run build          # node scripts/build.mjs -> lib/
+mise run build          # node scripts/build.ts -> lib/
 mise run test           # pnpm test (browser-bundle integration test)
 mise run check          # typecheck + lint + format-check + build + test
 mise run clean          # remove lib/
@@ -81,11 +82,11 @@ The browser envelope is:
 window.__ModuleLoader__.load({ id, factory: (require) => { ... return module.exports } })
 ```
 
-`scripts/build.mjs` asserts the envelope, the exposed `apply`/`inject`, the
+`scripts/build.ts` asserts the envelope, the exposed `apply`/`inject`, the
 absence of module syntax, and a zero-`require()` purity gate. `lib/` is
 generated — **do not edit it by hand**; edit `src/` and rebuild.
 
-`pnpm test` runs `scripts/client.test.mjs`. It evaluates the built
+`pnpm test` runs `scripts/client.test.ts`. It evaluates the built
 `lib/client.js` through a fake `window.__ModuleLoader__` and drives it against a
 stand-in locale service.
 

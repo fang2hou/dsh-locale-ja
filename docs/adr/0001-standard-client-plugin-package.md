@@ -51,4 +51,4 @@ lazy client entry would never materialize or activate.
   [ARCHITECTURE.md](../../ARCHITECTURE.md) and
   [DEVELOPMENT.md](../../DEVELOPMENT.md).
 - The build must preserve the loader envelope, CommonJS body, and immediate
-  client-entry metadata; `scripts/build.mjs` asserts these invariants.
+- client-entry metadata; `scripts/build.ts` asserts these invariants.
