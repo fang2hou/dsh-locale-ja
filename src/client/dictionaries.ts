@@ -212,10 +212,10 @@ const conversation: LocaleDictOf<"conversation"> = {
   "context.messages": "メッセージ",
   "stats.counts": "{turns} ターン · {steps} ステップ",
   "stats.llm": "LLM {duration}",
-  "stats.toolCall": "ツール呼び出し {duration}",
-  "stats.ttftAverage": "初回トークン平均 {duration}",
+  "stats.toolCall": "ツール {duration}",
+  "stats.ttftAverage": "TTFT {duration}",
   "stats.tokensPerSecond": "{throughput} tok/s",
-  "stats.cacheHit": "キャッシュヒット {percent}%",
+  "stats.cacheHit": "ヒット率 {percent}%",
   "stats.tokens": "入力 {input} tok · 出力 {output} tok",
   "settings.enter.title": "実行中の Enter キーの動作",
   "settings.enter.description":
@@ -348,10 +348,10 @@ const model: LocaleDictOf<"model"> = {
   "trigger.fallback": "モデルを選択",
   "trigger.selectAria": "モデルを選択",
   "trigger.aria": "モデルを選択、現在 {model}",
-  "trigger.ariaEffort": "モデルを選択、現在 {model}、推論レベル {effort}",
-  "menu.aria": "モデルと推論レベル",
+  "trigger.ariaEffort": "モデルを選択、現在 {model}、思考レベル {effort}",
+  "menu.aria": "モデルと思考レベル",
   "menu.model": "モデル",
-  "menu.effort": "推論レベル",
+  "menu.effort": "思考レベル",
   "effort.providerDefault": "デフォルト",
   "status.loading": "モデル一覧を更新中…",
   "error.action": "モデルの操作に失敗しました：{message}",
@@ -359,7 +359,7 @@ const model: LocaleDictOf<"model"> = {
   "warning.groupLoad": "{name} の読み込みに失敗しました：{message}",
   "empty.models": "利用可能なモデルがありません。",
   "blocked.composer": "現在のモデルは利用できません。先にモデルを選択してください",
-  "empty.efforts": "このモデルには推論レベルが設定されていません。",
+  "empty.efforts": "このモデルには思考レベルが設定されていません。",
 };
 
 const settings: LocaleDictOf<"settings"> = {
@@ -375,7 +375,7 @@ const settingsTheme: LocaleDictOf<"settings.theme"> = {
   "appearance.title": "外観",
   "appearance.light": "ライト",
   "appearance.dark": "ダーク",
-  "appearance.system": "システムに合わせる",
+  "appearance.system": "システム",
 };
 
 const feedback: LocaleDictOf<"feedback"> = {
@@ -550,9 +550,9 @@ const settingsModels: LocaleDictOf<"settings.models"> = {
 };
 
 const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
-  title: "エージェントプリセット",
+  title: "プリセット",
   description:
-    "これ以降に新規作成するセッションに適用されます。実行中のセッションは開始時のプリセットを維持します。",
+    "新規作成するセッションに適用されます。実行中のセッションは開始時のプリセットを維持します。",
   loading: "プリセットを読み込み中…",
   error: "エージェントプリセットを読み込めません。",
   userTrust: "カスタム",
@@ -564,16 +564,16 @@ const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
   builtIn: "組み込み",
   setDefault: "デフォルトに設定",
   view: "表示",
-  presetStandardName: "スタンダードモード",
+  presetStandardName: "スタンダード",
   presetStandardDescription:
     "ファイル編集、Shell、ファイルおよびウェブ検索、Skills、プラン、ゴール、サブエージェント、ワークフローをサポートする、フル機能のコーディングエージェントです。",
-  presetCodeName: "PTC モード",
+  presetCodeName: "PTC",
   presetCodeDescription:
     "スタンダードモードの全能力に加え、Code Mode SDK でツールを公開し、モデルが 1 つの TypeScript プログラムで複数ステップの操作を組み立てられます。",
-  presetMinimalName: "ミニマルモード",
+  presetMinimalName: "ミニマル",
   presetMinimalDescription:
     "永続化された bash と str_replace_editor の 2 ツールのみを備えたコーディングエージェントです。",
-  presetCordisName: "クリエイターモード",
+  presetCordisName: "クリエイター",
   presetCordisDescription:
     "カスタムエージェントプリセットの作成向け。スタンダードモードの全能力に加え、実行時インスペクト、プラグイン実験、プリセット作成のガイダンスを提供します。",
   duplicate: "複製",
