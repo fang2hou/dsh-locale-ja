@@ -32,8 +32,8 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
 - **Package manager**: pnpm only. Do not introduce npm or yarn.
 - **Linter**: [oxlint](https://oxc.rs/docs/guide/usage/linter) (config:
   `.oxlintrc.json`). No ESLint.
-- **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config via
-  defaults). No Prettier.
+- **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config:
+  `.oxfmtrc.json`). No Prettier.
 - **Type checker**: `tsc --noEmit` (config: `tsconfig.json`).
 - **Bundler**: esbuild (`scripts/build.mjs`); it also emits declarations through
   TypeScript.
@@ -186,31 +186,9 @@ client-module loader. See
 
 Trusted publishing requires npm CLI ≥ 11.5.1 and Node ≥ 22.14 (both met by the
 `node = "24"` tool in `mise.toml`), and a GitHub-hosted runner (the workflow
-uses `ubuntu-latest`).
-
-### One-time setup (done)
-
-npm trusted publishing can only be configured for a package that **already
-exists** (there is no PyPI-style pre-claim), so the bootstrap was a manual
-`0.1.0` publish followed by registering the trusted publisher. Both are done;
-this section is kept as the record of what the release path depends on:
-
-- `@fang2hou/dsh-locale-ja` exists on the public registry.
-- A trusted publisher is registered on npmjs.com (package Settings →
-  **Trusted publishing** → GitHub Actions) for repository
-  `fang2hou/dsh-locale-ja`, workflow `release.yml`, allowed action
-  `npm publish`, with no environment name.
-
-Equivalent CLI form, for reference or for re-registering:
-
-```bash
-npm trust github @fang2hou/dsh-locale-ja \
-  --file release.yml --repository fang2hou/dsh-locale-ja \
-  --allow-publish --registry https://registry.npmjs.org -y
-```
-
-Routine releases therefore need no local npm credentials: pushing the tag is
-the whole release.
+uses `ubuntu-latest`). A trusted publisher is already registered on npmjs.com
+for this repository and the `release.yml` workflow, so routine releases need
+no local npm credentials: pushing the tag is the whole release.
 
 ### Routine releases
 

@@ -281,7 +281,10 @@ assert(
   locale.getLocale().locales.some((entry) => entry.id === "ja") === false,
   "removes 日本語 from the selectable locales",
 );
-assert(locale.getLocale().active === "zh", "hands the UI back to a shipped locale");
+assert(
+  locale.getLocale().active === "en",
+  "falls back to English when removed while Japanese is active",
+);
 assert(locale.registrations.length === 0, "disposes every dictionary registration");
 assert(dom.tags.length === 0, "removes the stylesheet");
 
