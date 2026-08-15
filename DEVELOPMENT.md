@@ -97,11 +97,11 @@ against its namespace's shipped key union, so a renamed, removed, or added DSH
 key is a compile-time error. Preserve placeholders such as `{name}` verbatim.
 
 Twenty-six of the 29 namespaces use unions from the owning package's shipped
-declarations. The three namespaces
-`directory-browser`, `permission.access`, and `trajectory` use documented local
-copies because their owning packages do not expose those unions through their
-`exports` maps; upstream drift in those three sets is not detected
-automatically.
+declarations. The three namespaces `directory-browser`, `permission.access`,
+and `trajectory` use documented local copies because their owning packages do
+not expose those unions through their `exports` maps; `pnpm typecheck` cannot
+see drift in those three, but the upstream drift check below can — it reads
+the key contracts (including those three) straight out of any DSH release.
 
 After editing a dictionary, run:
 
@@ -109,7 +109,8 @@ After editing a dictionary, run:
 pnpm typecheck
 ```
 
-This is both the dictionary correctness check and the DSH-upgrade drift check.
+This is both the dictionary correctness check and the DSH-upgrade drift check
+at the pinned devDependency versions.
 
 ## E2E testing (Docker + Playwright, no local install needed)
 
@@ -130,6 +131,35 @@ Prerequisites: a running Docker daemon (OrbStack/Docker Desktop), and
 one-time `pnpm exec playwright install chromium`. CI runs the same suite on
 every PR (`e2e` job) and gates releases on it. It is deliberately not part of
 `mise run check` or any git hook.
+
+The DSH under test defaults to the pinned version above; override it with
+`DSH_E2E_DSH_VERSION` (an exact version, or `latest` for the registry's
+current release):
+
+```bash
+mise run e2e-latest                  # latest @deepseek-ai/dsh
+DSH_E2E_DSH_VERSION=0.1.0-rc.7 mise run e2e   # an exact upcoming version
+```
+
+## Watching upstream DSH releases
+
+DSH is a developer preview that ships faster than this plugin pins it. The
+`E2E latest DSH` workflow (`.github/workflows/e2e-upstream.yml`) runs twice a
+day on `main` against the registry's latest release and fails the run — and
+emails the repo owner — when upstream drifts:
+
+- **E2E on the latest DSH** catches runtime breakage (locale service
+  contracts, plugin loading, UI structure).
+- **`mise run drift`** (`scripts/check-dict-drift.ts`) installs that
+  release's full web tree into a throwaway directory and diffs the Japanese
+  dictionaries against the shipped locale key contracts — every namespace,
+  including the three local-copy ones — reporting missing keys (fallback
+  leaks through), stale keys, and uncovered or removed namespaces.
+
+Both checks also run on manual dispatch, where a `dsh_version` input accepts
+an exact version to preview a release before it becomes `latest`. A red
+nightly means: pull that DSH version into devDependencies and
+`e2e/harness.ts`'s pin, refresh `src/client/dictionaries.ts`, and release.
 
 ## Testing against a real DSH
 

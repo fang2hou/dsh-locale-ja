@@ -1,6 +1,8 @@
 // Docker lifecycle helpers for the DSH web E2E suite. No dependencies:
-// node:child_process + global fetch only. The DSH version pin mirrors the
-// plugin's peerDependencies — bump both together.
+// node:child_process + global fetch only. The default DSH version pin mirrors
+// the plugin's peerDependencies — bump both together. Override it with
+// DSH_E2E_DSH_VERSION (an exact version, or `latest` to resolve the npm
+// registry's latest release) to test an upcoming or newer DSH.
 import { execFileSync, spawnSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import net from "node:net";
@@ -8,7 +10,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
-export const DSH_VERSION = "0.1.0-rc.6";
+export const DEFAULT_DSH_VERSION = "0.1.0-rc.6";
 
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 180_000);
 
@@ -16,15 +18,15 @@ function run(cmd: string, args: string[], opts: ExecFileSyncOptions = {}): void 
   execFileSync(cmd, args, { stdio: "inherit", ...opts });
 }
 
-export function buildImage(): void {
+export function buildImage(version: string): void {
   run("docker", [
     "build",
     "-f",
     "e2e/Dockerfile",
     "--build-arg",
-    `DSH_VERSION=${DSH_VERSION}`,
+    `DSH_VERSION=${version}`,
     "-t",
-    `${IMAGE}:dsh-${DSH_VERSION}`,
+    `${IMAGE}:dsh-${version}`,
     "e2e",
   ]);
 }
@@ -45,7 +47,7 @@ export function pickFreePort(): Promise<number> {
   return promise;
 }
 
-export function startContainer(port: number): void {
+export function startContainer(port: number, version: string): void {
   // Idempotent: clear any leftover container from a previous aborted run.
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
   // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
@@ -59,7 +61,7 @@ export function startContainer(port: number): void {
     CONTAINER,
     "-p",
     `127.0.0.1:${port}:3081`,
-    `${IMAGE}:dsh-${DSH_VERSION}`,
+    `${IMAGE}:dsh-${version}`,
     "sh",
     "-c",
     "socat TCP-LISTEN:3081,bind=0.0.0.0,fork,reuseaddr TCP:127.0.0.1:3080 " +

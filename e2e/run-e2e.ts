@@ -1,10 +1,15 @@
 // Single entry point for the Docker + Playwright E2E suite:
 // pack the plugin from current source -> build image -> start container ->
 // run Playwright against it -> teardown.
+//
+// DSH_E2E_DSH_VERSION selects the DSH under test: an exact version, or
+// `latest` to resolve the npm registry's current release. Unset = the pinned
+// peerDependency version.
 import { spawnSync, execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import fs from "node:fs";
 import path from "node:path";
+import { resolveDshVersion } from "../scripts/dsh-version.ts";
 import {
   buildImage,
   startContainer,
@@ -13,6 +18,7 @@ import {
   stopContainer,
   pickFreePort,
   CONTAINER,
+  DEFAULT_DSH_VERSION,
 } from "./harness.ts";
 
 // Refuse to run without a Docker daemon.
@@ -22,7 +28,10 @@ if (probe.status !== 0) {
   process.exit(1);
 }
 
-buildImage();
+const dshVersion = await resolveDshVersion(process.env.DSH_E2E_DSH_VERSION ?? DEFAULT_DSH_VERSION);
+console.log(`[e2e] testing against @deepseek-ai/dsh@${dshVersion}`);
+
+buildImage(dshVersion);
 
 // Pack the plugin from the current source (prepack runs the full build).
 const packDir = fs.mkdtempSync(path.join(tmpdir(), "dsh-locale-ja-e2e-"));
@@ -37,7 +46,7 @@ let exitCode = 1;
 try {
   const port = await pickFreePort();
   const baseUrl = `http://127.0.0.1:${port}`;
-  startContainer(port);
+  startContainer(port, dshVersion);
   await waitReady(baseUrl);
   copyTarball(tarballPath);
 
