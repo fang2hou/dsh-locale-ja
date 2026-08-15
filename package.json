@@ -52,8 +52,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "format": "oxfmt --write --ignore-path=.oxfmtignore .",
-    "format:check": "oxfmt --check --ignore-path=.oxfmtignore .",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
     "e2e": "node e2e/run-e2e.mjs"
   },
   "devDependencies": {
