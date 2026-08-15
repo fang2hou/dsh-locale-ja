@@ -5,16 +5,35 @@
     "suspicious": "warn",
     "perf": "warn"
   },
+  // The browser bundle runs in the browser; only the Node tooling below loads Node APIs.
+  "plugins": ["node"],
+  "jsPlugins": ["eslint-plugin-playwright"],
   "overrides": [
+    {
+      // scripts/ and e2e/ run on Node; deliberate node-plugin rules for them only.
+      "files": ["scripts/**", "e2e/**"],
+      "rules": {
+        "node/no-exports-assign": "error",
+        "node/no-path-concat": "error"
+      }
+    },
     {
       "files": ["e2e/**"],
       "rules": {
         // E2E phase flows and readiness polling are sequential by design.
         "no-await-in-loop": "off"
       }
+    },
+    {
+      "files": ["e2e/**/*.ts"],
+      "rules": {
+        "playwright/no-networkidle": "error",
+        "playwright/no-wait-for-timeout": "warn"
+      }
     }
   ],
   "rules": {
+    // Build/test tooling in scripts/ and e2e/ reports through the console.
     "no-console": "off"
   },
   "ignorePatterns": ["lib/**", "node_modules/**"]
