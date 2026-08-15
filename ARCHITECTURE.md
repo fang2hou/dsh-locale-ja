@@ -18,7 +18,7 @@ registration and all user-facing work. `dsh plugin --profile web add
 
 1. **The browser bundle must use DSH's module-loader envelope and resolve
    nothing through the platform module table.** Every `@deepseek-ai/*` reference
-   in `src/` is `import type` only, and `scripts/build.mjs` must keep asserting
+   in `src/` is `import type` only, and `scripts/build.ts` must keep asserting
    the envelope, zero `require()` calls, no module syntax, and exposed
    `apply`/`inject`; see [ADR-0001](./docs/adr/0001-standard-client-plugin-package.md).
    This keeps `lib/client.js` loadable by DSH without a runtime platform-module
@@ -99,10 +99,10 @@ registration and all user-facing work. `dsh plugin --profile web add
   plugin-owned, locale-scoped style tag for `--dsw-font-family`.
 - `src/client/dictionaries.ts` — defines the 29 Japanese namespace dictionaries
   and their platform or documented local key unions.
-- `scripts/build.mjs` — emits declarations, the Host ESM entry, and the
+- `scripts/build.ts` — emits declarations, the Host ESM entry, and the
   browser loader bundle, then enforces its envelope, purity, module-syntax, and
   export gates.
-- `scripts/client.test.mjs` — evaluates `lib/client.js` through a fake
+- `scripts/client.test.ts` — evaluates `lib/client.js` through a fake
   `window.__ModuleLoader__` and stand-in locale service, covering activation,
   switching, local persistence, fonts, and complete teardown.
 - `cordis.patch.yml` — inserts the `locale-ja` Loader row that lets DSH discover

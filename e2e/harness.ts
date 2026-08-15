@@ -2,7 +2,9 @@
 // node:child_process + global fetch only. The DSH version pin mirrors the
 // plugin's peerDependencies — bump both together.
 import { execFileSync, spawnSync } from "node:child_process";
+import type { ExecFileSyncOptions } from "node:child_process";
 import net from "node:net";
+import { setTimeout as sleep } from "node:timers/promises";
 
 export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
@@ -10,11 +12,11 @@ export const DSH_VERSION = "0.1.0-rc.6";
 
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 180_000);
 
-function run(cmd, args, opts = {}) {
-  return execFileSync(cmd, args, { stdio: "inherit", ...opts });
+function run(cmd: string, args: string[], opts: ExecFileSyncOptions = {}): void {
+  execFileSync(cmd, args, { stdio: "inherit", ...opts });
 }
 
-export function buildImage() {
+export function buildImage(): void {
   run("docker", [
     "build",
     "-f",
@@ -27,19 +29,23 @@ export function buildImage() {
   ]);
 }
 
-export function pickFreePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.unref();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const { port } = server.address();
-      server.close(() => resolve(port));
-    });
+export function pickFreePort(): Promise<number> {
+  const { promise, resolve, reject } = Promise.withResolvers<number>();
+  const server = net.createServer();
+  server.unref();
+  server.on("error", reject);
+  server.listen(0, "127.0.0.1", () => {
+    const address = server.address();
+    if (typeof address !== "object" || address === null) {
+      reject(new Error("the port probe server did not report its address"));
+      return;
+    }
+    server.close(() => resolve(address.port));
   });
+  return promise;
 }
 
-export function startContainer(port) {
+export function startContainer(port: number): void {
   // Idempotent: clear any leftover container from a previous aborted run.
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
   // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
@@ -61,7 +67,7 @@ export function startContainer(port) {
   ]);
 }
 
-export async function waitReady(baseUrl, timeoutMs = BOOT_TIMEOUT_MS) {
+export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   // First boot auto-initializes the profile and runs pnpm install inside the
   // container, so allow minutes. Sequential polling by design.
@@ -72,7 +78,7 @@ export async function waitReady(baseUrl, timeoutMs = BOOT_TIMEOUT_MS) {
     } catch {
       // not up yet
     }
-    await new Promise((r) => setTimeout(r, 1500));
+    await sleep(1500);
   }
   console.error(
     `[harness] DSH web did not become ready at ${baseUrl} within ${timeoutMs} ms; docker logs:`,
@@ -81,11 +87,11 @@ export async function waitReady(baseUrl, timeoutMs = BOOT_TIMEOUT_MS) {
   throw new Error(`DSH web not ready at ${baseUrl} after ${timeoutMs} ms`);
 }
 
-export function copyTarball(localPath) {
+export function copyTarball(localPath: string): void {
   run("docker", ["cp", localPath, `${CONTAINER}:/tmp/dsh-locale-ja.tgz`]);
 }
 
-export function installPlugin() {
+export function installPlugin(): void {
   // Absolute path required: pnpm runs with cwd = the profile directory.
   run("docker", [
     "exec",
@@ -99,7 +105,7 @@ export function installPlugin() {
   ]);
 }
 
-export function removePlugin() {
+export function removePlugin(): void {
   run("docker", [
     "exec",
     CONTAINER,
@@ -112,12 +118,12 @@ export function removePlugin() {
   ]);
 }
 
-export async function restartAndWait(baseUrl) {
+export async function restartAndWait(baseUrl: string): Promise<void> {
   // docker restart preserves the container FS, so install/remove state persists.
   run("docker", ["restart", CONTAINER]);
   await waitReady(baseUrl);
 }
 
-export function stopContainer() {
+export function stopContainer(): void {
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
 }

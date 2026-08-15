@@ -26,7 +26,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const libDir = resolve(root, "lib");
 
 /** Module id the loader registers this bundle under; must equal the package name. */
-const { name: PACKAGE_ID } = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
+const { name: PACKAGE_ID } = JSON.parse(await readFile(resolve(root, "package.json"), "utf8")) as {
+  name: string;
+};
 
 const BANNER = `window.__ModuleLoader__.load({
 \tid: ${JSON.stringify(PACKAGE_ID)},
@@ -86,6 +88,7 @@ const client = await build({
 });
 
 const [output] = client.outputFiles;
+if (output === undefined) throw new Error("esbuild produced no client bundle output");
 const body = output.text;
 
 // Purity gate: a value import of a platform package would make this plugin
