@@ -1,0 +1,5 @@
+* -linguist-detectable
+src/** linguist-detectable
+scripts/** linguist-detectable
+e2e/** linguist-detectable
+pnpm-lock.yaml linguist-generated
