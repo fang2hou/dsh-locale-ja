@@ -40,7 +40,8 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
   TypeScript.
 - **Commits**: Conventional Commits, validated by cocogitto (`cog`) and prek.
 - **PR titles**: the title becomes the squash-merge commit subject on `main`;
-  CI validates it with `cog verify` (`.github/workflows/pr-title.yml`).
+  CI validates it with `cog verify` (`validate-pr-title` job in
+  `.github/workflows/ci.yml`).
 - **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus
   a `commit-msg` hook that runs `cog verify`.
 
