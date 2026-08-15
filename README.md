@@ -1,6 +1,12 @@
+<div align="center">
+
+<img width="647" height="385" alt="sample" src="https://github.com/user-attachments/assets/ee9a6b90-52a5-4c23-b6a9-4aefb7e8247f" />
+
 # dsh-locale-ja
 
-> DeepSeek Harness（DSH）の Web UI に **日本語** を追加するプラグインパッケージです。
+DeepSeek Harness（DSH）の Web UI に **日本語** を追加するプラグイン
+
+</div>
 
 ## 機能
 
