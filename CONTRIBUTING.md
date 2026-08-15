@@ -1,8 +1,7 @@
 # Contributing
 
 Contributions are welcome. This document sets the expectations for issues,
-pull requests, and commits so that both humans and AI agents can collaborate
-predictably.
+pull requests, and commits.
 
 ## Engineering baseline
 
@@ -19,15 +18,15 @@ without explicit approval:
 See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
 [ARCHITECTURE.md](./ARCHITECTURE.md) for invariants that must not be broken.
 
-## Issue workflow
+## Issues
 
 - Search existing issues before opening a new one.
 - For translation fixes, edit `src/client/dictionaries.ts`; name the affected
-  namespace and key, the preferred Japanese wording (and why it is better for
-  an AI-agent UI), and run `pnpm typecheck` to validate the namespace keys.
+  namespace and key, the preferred Japanese wording, and run `pnpm typecheck`
+  to validate the namespace keys.
 - For bugs, include the DSH version, the active locale, and reproduction steps.
 
-## Pull request workflow
+## Pull requests
 
 1. Create a branch from `main`.
 2. Make the smallest coherent change that solves the requirement. Avoid
@@ -40,63 +39,28 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
    ```
 
 4. Open a pull request using the
-   [PR template](./.github/pull_request_template.md).
+   [PR template](./.github/pull_request_template.md) and fill in every
+   section; state AI assistance explicitly when it applies. The PR title
+   follows Conventional Commits because squash merging makes it the final
+   commit message.
 
-### Pull request description
-
-The PR description must clearly include:
-
-- **Purpose** — what the change does and why.
-- **Impact** — what is affected (UI copy, package build artifacts, runtime
-  behavior).
-- **Context** — relevant background or linked issues.
-- **Risks** — any concerns or behavioral changes.
-- **Testing** — validation performed (`mise run check` output, manual checks,
-  screenshots for UI changes).
-
-For AI-generated or AI-assisted PRs, state this explicitly in the description.
-
-### Squash merging
-
-If the repository uses squash merging, the **PR title** must follow the
-Conventional Commits convention, because it becomes the final commit message.
-
-## Commit conventions
+## Commits
 
 All commits follow [Conventional Commits](https://www.conventionalcommits.org/),
 validated by cocogitto:
 
-```text
-feat(core): add a namespace dictionary
-fix(font): keep override scoped to the active locale
-docs(readme): clarify the load flow
-refactor(build): tighten the client-bundle purity gate
-```
-
 - Use meaningful types: `feat`, `fix`, `docs`, `refactor`, `test`, `build`,
-  `ci`, `chore`, `perf`, `style`, `revert`.
-- Use a scope when it improves clarity.
+  `ci`, `chore`, `perf`, `style`, `revert`, and a scope when it improves
+  clarity.
 - Avoid meaningless messages (`update`, `wip`, `fix stuff`).
 - Create validated commits with `cog commit`, or verify a message with
   `cog verify "<message>"`.
 
 ## Review expectations
 
-- The change implements the requested behavior.
 - `mise run check` and prek pass.
 - No unintended files, dependencies, secrets, or direct edits to generated
   `lib/` output.
 - Architecture invariants still hold.
-- Code language is English (only UI copy literals are Japanese); UI copy is
-  natural Japanese, not machine-translated or Chinese-influenced wording.
-
-## Language policy
-
-| Aspect       | Language                                           |
-| ------------ | -------------------------------------------------- |
-| Product UI   | Japanese (default), Chinese, English               |
-| Source code  | English                                            |
-| Conversation | The contributor's language                         |
-
-Do not infer UI language from conversation language, and keep Japanese UI copy
-natural and consistent.
+- Code is English and UI copy is natural Japanese — not machine-translated or
+  Chinese-influenced wording.
