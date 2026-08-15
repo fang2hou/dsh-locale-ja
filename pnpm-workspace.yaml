@@ -3,6 +3,10 @@
 # https://pnpm.io/settings
 allowBuilds:
   esbuild: true
+# Supply-chain guard: refuse resolutions published less than 60 minutes ago.
+# The exclude list below unblocks the fast-moving DSH prerelease line.
+minimumReleaseAge: 60
+
 minimumReleaseAgeExclude:
   - "@deepseek-ai/cordis-plugin-include@1.0.6"
   - "@deepseek-ai/cordis-plugin-loader@1.0.2"

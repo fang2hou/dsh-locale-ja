@@ -5,8 +5,9 @@
 [tools]
 node = "24"
 pnpm = "11"
-cocogitto = "latest"
-prek = "latest"
+cocogitto = "7"
+prek = "0.4"
+gitleaks = "8"
 
 # --- Common project tasks (the project-level task interface) ---
 # Frontend work delegates to pnpm scripts; mise is the stable entry point.
