@@ -26,7 +26,7 @@ const JA_LABEL = "日本語";
  * active. Typed against the shipped ids so it cannot drift to an id the Host
  * schema would reject.
  */
-const FALLBACK: "zh" | "en" = "zh";
+const FALLBACK: "zh" | "en" = "en";
 
 /** One entry of the selectable locale list, widened to injected ids. */
 interface Locale {
