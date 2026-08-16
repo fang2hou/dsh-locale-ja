@@ -1,8 +1,3 @@
-# prek pre-commit configuration (pre-commit compatible).
-# Install hooks into your git repo:  prek install
-# Run all hooks manually:            prek run --all-files
-# https://github.com/j178/prek
-
 repos:
   - repo: local
     hooks:
@@ -37,6 +32,19 @@ repos:
         args: ["git", "--staged", "--pre-commit", "--redact", "--no-banner"]
         language: system
         pass_filenames: false
+
+      - id: actionlint
+        name: actionlint (github workflows)
+        entry: actionlint
+        language: system
+        pass_filenames: false
+        files: ^\.github/workflows/
+
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
 
   - repo: local
     hooks:

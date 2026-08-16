@@ -1,17 +1,9 @@
 /**
  * A minimal DeepSeek-compatible chat-completions mock for local development
- * and E2E: enough of the official wire format (`dsh-llm-deepseek` is the
- * consumer) to complete real conversations — streamed content and reasoning
- * deltas, a finish frame carrying usage with cache details, and the [DONE]
- * sentinel — with zero dependencies.
- *
- * Point DSH at it with:
- *   DEEPSEEK_BASE_URL=http://host.docker.internal:<port>  (from a container)
- *   DEEPSEEK_API_KEY=mock-key
- *
- * `startMockLlm(port)` is the in-process server; `ensureMockLlm(port)` runs
- * it as a detached child (see its doc for why); `node e2e/mock-llm.ts [port]`
- * runs it standalone.
+ * and E2E — streamed content and reasoning deltas, a finish frame with
+ * usage, and the [DONE] sentinel — with zero dependencies (`dsh-llm-deepseek`
+ * is the consumer). Point DSH at it with DEEPSEEK_BASE_URL and
+ * DEEPSEEK_API_KEY=mock-key; `node e2e/mock-llm.ts [port]` runs it standalone.
  */
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";

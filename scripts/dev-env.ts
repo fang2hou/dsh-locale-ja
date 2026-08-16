@@ -1,33 +1,15 @@
 /**
- * Persistent local DSH web environment for developing this plugin.
+ * Persistent local DSH web environment for developing this plugin: the
+ * container bind-mounts the repository read-only and installs it through
+ * pnpm's `link:` protocol, so the served plugin IS the host's built output.
+ * The watcher rebuilds on source changes and DSH's own HMR
+ * (`dsh-client-hmr`) hot-swaps the rebuilt bundle into the open page — no
+ * reload, plugin disposers included. `cordis.patch.yml`/`package.json`
+ * changes restart DSH automatically.
  *
- * The container bind-mounts the repository at /srv/plugin (read-only) and
- * installs the package through pnpm's `link:` protocol, so the plugin the
- * server serves IS the host's built output:
- *
- *   src/** change → this watcher rebuilds lib/ (~1s) → DSH's built-in HMR
- *   stat-polls the client bundle (500ms), recomputes its rev, and the browser
- *   hot-swaps the plugin live — no page reload, plugin disposers included.
- *
- * That chain is DSH's own dev mechanism (`dsh-client-hmr`): it stays idle
- * until something rewrites the installed client bundle, which is exactly what
- * the mount + watcher arrangement provides here.
- *
- * Subcommands:
- *   start    create/reuse the container, link-install the plugin, then watch
- *            sources and rebuild in the foreground (Ctrl-C stops only the
- *            watcher; the container keeps running).
- *   stop     remove the container (its profile state is throwaway by design).
- *   restart  restart DSH inside the container and wait for readiness — for
- *            loader-level changes (cordis.patch.yml, package.json) the
- *            watcher does this automatically.
- *   status   print the container state and the URL.
- *   logs     follow the container logs (Ctrl-C to detach).
- *
- * Environment:
- *   DSH_DEV_PORT          host port to publish (default 13080)
- *   DSH_DEV_DSH_VERSION   DSH under test: an exact version or `latest`
- *                         (default: the pinned peerDependency version)
+ * Subcommands (exposed as mise tasks): start, stop, restart, status, logs.
+ * Environment: DSH_DEV_PORT (default 13080), DSH_DEV_DSH_VERSION (exact
+ * version or `latest`; default the pinned peerDependency version).
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";

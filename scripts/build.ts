@@ -1,19 +1,9 @@
 /**
- * Build the standard DSH plugin package into `lib/`.
- *
- * Three outputs, one per face of the package:
- *  - `lib/types/**.d.ts` — declarations, emitted by tsc (the only emitter that
- *    can produce them; esbuild does not type-check).
- *  - `lib/index.js`      — the Host half, a plain ESM module (`exports["."]`).
- *  - `lib/client.js`     — the browser half (`exports["./client"]`), a CommonJS
- *    body wrapped in the module-loader envelope the shell evaluates.
- *
- * The envelope is the contract every shipped `@deepseek-ai/dsh-client-*` bundle
- * satisfies: the file is evaluated in the page, calls
- * `window.__ModuleLoader__.load({ id, factory })`, and the factory receives a
- * `require` bound to the frozen platform module table and returns the plugin's
- * `module.exports`. This package resolves nothing through that table — every
- * platform import in `src/` is type-only — which the purity gate below enforces.
+ * Build the plugin package into `lib/`: declarations via tsc (the only
+ * emitter that can produce them), the Host half as plain ESM, and the browser
+ * half as a CommonJS body wrapped in the module-loader envelope the shell
+ * evaluates (see ARCHITECTURE.md). The gates below enforce the envelope, the
+ * zero-`require()` purity, and the exposed `apply`/`inject`.
  */
 import { spawnSync } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -78,9 +68,7 @@ const client = await build({
   platform: "browser",
   target: "es2024",
   legalComments: "none",
-  // The envelope wraps the module body in a function, shifting every line, so a
-  // sourcemap would point at the wrong rows. The bundle ships unminified and
-  // readable instead, exactly like the shipped ones.
+  // The envelope shifts every line, so a sourcemap would point at the wrong rows.
   sourcemap: false,
   minify: false,
   write: false,
@@ -91,9 +79,7 @@ const [output] = client.outputFiles;
 if (output === undefined) throw new Error("esbuild produced no client bundle output");
 const body = output.text;
 
-// Purity gate: a value import of a platform package would make this plugin
-// depend on the shared module table and on another plugin's runtime identity.
-// Every platform import here is type-only, so the bundle must resolve nothing.
+// Every platform import is type-only, so the bundle must resolve nothing.
 const requires = [...body.matchAll(/\brequire\(\s*(["'][^"']+["'])\s*\)/g)].map((m) => m[1]);
 if (requires.length > 0) {
   throw new Error(

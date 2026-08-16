@@ -15,8 +15,6 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
 
-    // Node 24 runs these scripts directly by type stripping; nothing is
-    // emitted, so `.ts` specifiers are allowed and must stay erasable.
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,

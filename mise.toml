@@ -1,16 +1,11 @@
-# mise is the single source of truth for runtime, CLI tool versions, and tasks.
-# Install/activate everything: `mise install` then `mise run install`.
-# https://mise.jdx.dev/
-
 [tools]
 node = "24"
 pnpm = "11"
 cocogitto = "7"
 prek = "0.4"
 gitleaks = "8"
-
-# --- Common project tasks (the project-level task interface) ---
-# Frontend work delegates to pnpm scripts; mise is the stable entry point.
+actionlint = "1"
+shellcheck = "0.11"
 
 [tasks.install]
 description = "Install Node dependencies with pnpm."
