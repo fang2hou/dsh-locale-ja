@@ -7,10 +7,8 @@ const FONT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-font.c
 const LAYOUT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-layout.css"]';
 
 async function dismissOnboarding(page: Page) {
-  // Onboarding dialogs (Internal Testing Notice, API-key setup) block the
-  // whole UI, and their labels follow the active locale — English by default,
-  // Japanese once this plugin is active. They mount sequentially, and on a
-  // cold first load they can appear seconds after the shell: keep checking
+  // Onboarding dialogs block the whole UI, follow the active locale, and
+  // mount sequentially — possibly seconds after the shell. Keep dismissing
   // until the UI stays dialog-free for a settle window.
   const anyDialog = page.getByRole("dialog").first();
   const dismissButton = page

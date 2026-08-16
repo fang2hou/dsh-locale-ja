@@ -17,7 +17,14 @@ The project standardizes its environment with [mise](https://mise.jdx.dev/):
 | pnpm 11                      | `mise`      | Package manager (never npm/yarn)             |
 | [cocogitto](https://cocogitto.ai/) (`cog`) | `mise` | Conventional Commits validation             |
 | [prek](https://github.com/j178/prek)       | `mise` | Pre-commit framework                         |
+| gitleaks                     | `mise`      | Secret scanning                              |
+| actionlint, shellcheck       | `mise`      | Workflow and shell lint (prek hooks)         |
 | TypeScript, esbuild, oxlint, oxfmt | npm devDeps | Type-check, declarations, bundle, lint, format |
+
+TypeScript is pinned as an npm devDependency through the lockfile rather than
+a mise tool: mise manages runtimes and CLI tools, while language packages
+belong to pnpm. The lockfile makes the `tsc` version exactly as reproducible
+as a mise pin.
 
 ## Setup
 
@@ -31,19 +38,31 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
 
 - **Package manager**: pnpm only. Do not introduce npm or yarn.
 - **Linter**: [oxlint](https://oxc.rs/docs/guide/usage/linter) (config:
-  `.oxlintrc.json`). No ESLint.
+  `.oxlintrc.json`). No ESLint. The `node` plugin's rules apply to `scripts/`
+  and `e2e/` (the only Node-running code) through overrides;
+  `no-await-in-loop` is off for the E2E/dev flows, which are sequential by
+  design; `no-console` is off for build/test tooling; Playwright rules load
+  through oxlint's `jsPlugins` bridge (`eslint-plugin-playwright`).
 - **Formatter**: [oxfmt](https://oxc.rs/docs/guide/usage/formatter) (config:
   `.oxfmtrc.json`). No Prettier.
 - **Type checker**: `tsc --noEmit` (configs: `tsconfig.json` for `src/`,
-  `tsconfig.tools.json` for `scripts/` and `e2e/`).
+  `tsconfig.tools.json` for `scripts/` and `e2e/`; both use explicit `.ts`
+  import specifiers — only declaration-only emit and Node type-stripping can
+  resolve them).
 - **Bundler**: esbuild (`scripts/build.ts`); it also emits declarations through
   TypeScript.
 - **Commits**: Conventional Commits, validated by cocogitto (`cog`) and prek.
 - **PR titles**: the title becomes the squash-merge commit subject on `main`;
   CI validates it with `cog verify` (`validate-pr-title` job in
-  `.github/workflows/ci.yml`).
-- **Pre-commit**: prek runs oxlint, oxfmt (check), and (on push) typecheck, plus
-  a `commit-msg` hook that runs `cog verify`.
+  `.github/workflows/ci.yml`). The title reaches the script through an
+  environment variable, never `${{ }}` interpolation (script-injection guard).
+- **Pre-commit**: prek runs oxlint, oxfmt (check), gitleaks, actionlint
+  (GitHub workflows), shellcheck, and (on push) typecheck, plus a `commit-msg`
+  hook that runs `cog verify`.
+- **Workspace policy** (`pnpm-workspace.yaml`): `allowBuilds` approves
+  esbuild's postinstall; `minimumReleaseAge: 60` refuses resolutions
+  published less than an hour ago, with the fast-moving `@deepseek-ai/*`
+  prerelease line excluded.
 
 ## Common tasks
 
@@ -117,6 +136,10 @@ pnpm typecheck
 This is both the dictionary correctness check and the DSH-upgrade drift check
 at the pinned devDependency versions.
 
+
+## End-to-end suite
+
+`mise run e2e` (`e2e/run-e2e.ts`):
 1. builds the plugin tarball from the current source (`pnpm pack`),
 2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.0-rc.6`
    (`e2e/Dockerfile`),

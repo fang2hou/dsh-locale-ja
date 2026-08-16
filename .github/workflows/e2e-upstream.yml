@@ -1,21 +1,13 @@
 name: E2E latest DSH
 
-# Upstream watch: DSH is a developer preview that ships frequently, while this
-# plugin pins the version its dictionaries are checked against. Twice a day,
-# this workflow pulls the registry's latest @deepseek-ai/dsh and verifies the
-# plugin against it end to end, so an upstream release that breaks the plugin
-# (runtime contract change) or strands Japanese dictionary keys (locale key
-# drift) turns a scheduled run red — GitHub emails the repo owner on failed
-# scheduled workflows — instead of waiting for the next manual upgrade.
-#
-# Both checks run even when the first one fails (`if: !cancelled()`): a drift
-# report plus a passing/failing e2e says whether the fix is a dictionary
-# refresh or an adapter change. Manual dispatch accepts an exact version to
-# preview an upcoming release before it is `latest`.
+# Twice a day, verify the plugin against the registry's latest
+# @deepseek-ai/dsh — dictionary drift plus a full e2e — so an upstream release
+# that breaks the plugin or strands Japanese keys turns a scheduled run red
+# instead of waiting for the next manual upgrade.
 
 on:
   schedule:
-    - cron: "0 */12 * * *" # every half day
+    - cron: "0 */12 * * *"
   workflow_dispatch:
     inputs:
       dsh_version:
@@ -37,7 +29,7 @@ jobs:
     timeout-minutes: 45
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install mise and tools
         uses: jdx/mise-action@v4
@@ -48,11 +40,13 @@ jobs:
       - name: Resolve DSH version under test
         id: dsh
         run: |
-          version=$(node scripts/dsh-version.ts "${{ inputs.dsh_version || 'latest' }}")
+          version=$(node scripts/dsh-version.ts "$DSH_VERSION_SPEC")
           echo "version=$version" >> "$GITHUB_OUTPUT"
+        env:
+          DSH_VERSION_SPEC: ${{ inputs.dsh_version || 'latest' }}
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -60,9 +54,14 @@ jobs:
       - name: Install Playwright browser (chromium)
         run: pnpm exec playwright install --with-deps chromium
 
+      # Both checks run even when the first fails (`if: !cancelled()`): the
+      # drift result plus the e2e result together say whether the fix is a
+      # dictionary refresh or an adapter change.
       - name: Dictionary drift check (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
         if: ${{ !cancelled() }}
-        run: node scripts/check-dict-drift.ts --dsh "${{ steps.dsh.outputs.version }}"
+        run: node scripts/check-dict-drift.ts --dsh "$DSH_VERSION"
+        env:
+          DSH_VERSION: ${{ steps.dsh.outputs.version }}
 
       - name: E2E (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
         if: ${{ !cancelled() }}
@@ -75,6 +74,8 @@ jobs:
         run: |
           {
             echo "## Upstream watch"
-            echo "- DSH under test: \`@deepseek-ai/dsh@${{ steps.dsh.outputs.version }}\`"
+            echo "- DSH under test: \`@deepseek-ai/dsh@${DSH_VERSION}\`"
             echo "- Checked: dictionary drift (scripts/check-dict-drift.ts), Docker + Playwright e2e (e2e/)"
           } >> "$GITHUB_STEP_SUMMARY"
+        env:
+          DSH_VERSION: ${{ steps.dsh.outputs.version }}

@@ -1,14 +1,8 @@
 /**
- * Japanese locale plugin, browser half.
- *
- * Adds `ja` (日本語) as a fully selectable interface language: Japanese
- * dictionaries for every namespace the shipped client packages register, the
- * locale itself in the language selector, Japanese system fonts while it is
- * active, and a selection that survives a page reload.
- *
- * `apply` is the assembly point; each concern owns its own module and its own
- * disposer, and every contribution is registered through `ctx.effect` so
- * stopping, updating, or removing the plugin restores the shipped behavior.
+ * Browser half of the plugin: registers the Japanese dictionaries, adds `ja`
+ * to the selectable locales, keeps the Japanese font and layout stylesheets
+ * in sync with the active locale, and restores a persisted selection.
+ * Everything is registered through `ctx.effect` and reversed on teardown.
  */
 import type { ClientContext } from "@deepseek-ai/dsh-client-runtime/client";
 import { DICTS } from "./dictionaries.ts";
@@ -17,19 +11,12 @@ import { createLayoutStylesheet } from "./layout.ts";
 import { extendLocaleService, isJapaneseActive, JA } from "./locale-extension.ts";
 import { readPreference } from "./preference.ts";
 
-/** Required services: the locale registry this plugin extends. */
 export const inject = ["locale"];
 
-/**
- * Browser plugin body.
- * @param ctx - client cordis context.
- */
 export function apply(ctx: ClientContext): void {
   const { locale } = ctx;
 
   ctx.effect(() => {
-    // The untyped single-locale form: the typed form demands every shipped
-    // locale, and this plugin contributes exactly one.
     const disposers = Object.entries(DICTS).map(([ns, dict]) => locale.register(ns, JA, dict));
     return () => {
       for (const dispose of disposers) dispose();
@@ -55,7 +42,6 @@ export function apply(ctx: ClientContext): void {
     };
   }, "locale-ja: japanese font and layout");
 
-  // Last word on the active locale: the shipped service has already settled on
-  // the Host preference or the browser's own language by now.
+  // The shipped service has already settled on the Host or browser language.
   if (readPreference() === JA) locale.setLocale(JA);
 }

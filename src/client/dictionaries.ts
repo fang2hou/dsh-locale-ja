@@ -1,23 +1,11 @@
 /**
- * Japanese dictionaries for every locale namespace DeepSeek Harness registers.
- *
- * Each dictionary is typed against the namespace's own key union, taken from the
- * owning package's shipped declarations, so a key the platform dropped, renamed,
- * or added is a compile error rather than a string that silently falls back to
- * Chinese. `pnpm typecheck` after a DSH upgrade is therefore the drift check.
- *
- * Translation rules:
- *  - `{name}`-style placeholders are preserved verbatim.
- *  - Brand, model, and protocol tokens (DeepSeek, Cordis, JSON, Host, Client,
- *    plan mode, Provider ID) keep their established form.
- *  - Wording follows Japanese AI-agent UX conventions.
+ * Japanese dictionaries for every locale namespace DSH registers, typed
+ * against each namespace's shipped key union: a key the platform dropped,
+ * renamed, or added is a compile error rather than a silent fallback, so
+ * `pnpm typecheck` after a DSH upgrade is the dictionary drift check.
+ * Placeholders (`{name}`) are preserved verbatim; translation conventions
+ * live in DEVELOPMENT.md -> Editing the dictionaries.
  */
-/* oxlint-disable unicorn/require-module-specifiers --
- * `import type {}` is the declaration-merging idiom: it pulls a package's
- * `./client` declarations into the program, which is what merges its namespace
- * into `LocaleNamespaceMap` and makes `LocaleDictOf<'...'>` resolve. There is
- * nothing to name in the braces, and the import is erased at build time, so the
- * bundle keeps zero runtime dependencies. */
 import type { LocaleDictOf } from "@deepseek-ai/dsh-client-ui-slots";
 // common, settings.locale
 import type {} from "@deepseek-ai/dsh-client-locale/client";

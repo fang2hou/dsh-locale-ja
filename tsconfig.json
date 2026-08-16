@@ -15,14 +15,11 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
 
-    // The build emits JavaScript with esbuild; tsc owns declarations only.
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "lib/types",
     "rootDir": "src",
 
-    // In-package relative imports carry explicit `.ts` specifiers (the DSH
-    // convention); only a declaration-only emit may resolve them.
     "allowImportingTsExtensions": true,
     "erasableSyntaxOnly": true,
     "isolatedModules": true,

@@ -1,10 +1,7 @@
-// Single entry point for the Docker + Playwright E2E suite:
-// pack the plugin from current source -> build image -> start container ->
-// run Playwright against it -> teardown.
-//
+// E2E entry point: pack the plugin from current source -> build image ->
+// start container -> run Playwright against it -> teardown.
 // DSH_E2E_DSH_VERSION selects the DSH under test: an exact version, or
-// `latest` to resolve the npm registry's current release. Unset = the pinned
-// peerDependency version.
+// `latest` for the registry's current release. Unset = the pinned version.
 import { spawnSync, execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import fs from "node:fs";

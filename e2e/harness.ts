@@ -1,8 +1,6 @@
-// Docker lifecycle helpers for the DSH web E2E suite. No dependencies:
-// node:child_process + global fetch only. The default DSH version pin mirrors
-// the plugin's peerDependencies — bump both together. Override it with
-// DSH_E2E_DSH_VERSION (an exact version, or `latest` to resolve the npm
-// registry's latest release) to test an upcoming or newer DSH.
+// Docker lifecycle helpers for the DSH web E2E suite. The default DSH version
+// pin mirrors the plugin's peerDependencies — bump both together; override
+// with DSH_E2E_DSH_VERSION to test an upcoming or newer DSH.
 import { execFileSync, spawnSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import net from "node:net";

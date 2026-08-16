@@ -1,18 +1,10 @@
 /**
- * Integration test for the built browser bundle (`lib/client.js`).
- *
- * The bundle is evaluated the way the shell evaluates it — as a script that
- * calls `window.__ModuleLoader__.load({ id, factory })` — and then driven
- * against a stand-in locale service that mirrors the shipped `LocaleRuntime`
- * semantics (snapshot freezing, `publish` revision bumps, `setLocale`
- * validation, `adopt` from the Host scope) plus stubs for the browser APIs the
- * plugin touches.
- *
- * What this covers that `tsc` cannot: the envelope the loader requires, that the
- * bundle resolves nothing through the platform module table, and the runtime
- * behavior of the locale extension including full teardown.
- *
- * Run after `pnpm build` (`mise run test` builds first).
+ * Integration test for the built browser bundle (`lib/client.js`): evaluates
+ * it the way the shell does — through `window.__ModuleLoader__.load` — and
+ * drives it against a stand-in locale service mirroring the shipped
+ * `LocaleRuntime` semantics. Covers the loader envelope, the zero-`require`
+ * purity, and the runtime behavior of the locale extension including full
+ * teardown; `mise run test` builds first.
  */
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";

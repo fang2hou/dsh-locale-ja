@@ -1,29 +1,12 @@
 /**
- * Upstream dictionary drift check.
- *
- * Compares the plugin's Japanese dictionaries (`DICTS` in
- * `src/client/dictionaries.ts`) against the locale key contracts a DSH
- * release actually ships, and fails loudly on any drift:
- *
- *  - a key upstream added (missing ja text — silently falls back to Chinese),
- *  - a key upstream removed or renamed (stale ja text),
- *  - a whole namespace the web tree registers but the plugin does not cover,
- *  - a namespace the plugin still carries that upstream no longer ships.
- *
- * `pnpm typecheck` performs the same key check at the pinned devDependency
- * versions, but three namespaces (`directory-browser`, `permission.access`,
- * `trajectory`) borrow no key union from the platform, and nothing watches
- * newer DSH previews at all. This script closes both gaps: it installs a full
- * DSH web tree into a throwaway directory and reads the key contracts out of
- * it with the TypeScript compiler — the same declarations `LocaleDictOf`
- * types against, so no guessed contracts:
- *
- *  - merged `LocaleNamespaceMap` members enumerated through a generated probe
- *    program (covers every package that merges namespaces, including
- *    `trajectory` via its internal `locales.d.ts`),
- *  - `PermissionAccessKey` from the permission-presets internal declarations,
- *  - the `directory-browser` keys scanned from that package's client bundle,
- *    which registers dictionaries through the untyped runtime overload only.
+ * Upstream dictionary drift check: compares the plugin's Japanese
+ * dictionaries against the locale key contracts a DSH release actually
+ * ships, failing on missing keys (silent fallback), stale keys, uncovered
+ * namespaces, and removed namespaces. `pnpm typecheck` covers the pinned
+ * devDependencies, but three namespaces borrow no key union from the
+ * platform and nothing watches newer previews — this closes both gaps by
+ * installing a full DSH web tree into a throwaway directory and reading the
+ * key contracts out of it with the TypeScript compiler.
  *
  * Usage: `node scripts/check-dict-drift.ts [--dsh <version|latest>]`
  * (default `latest`; exit code 1 on any drift or extraction failure).

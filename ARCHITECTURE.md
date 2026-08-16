@@ -97,6 +97,11 @@ registration and all user-facing work. `dsh plugin --profile web add
   tolerating unavailable storage without moving state into Host settings.
 - `src/client/font.ts` — creates, synchronizes, and disposes the
   plugin-owned, locale-scoped style tag for `--dsw-font-family`.
+- `src/client/layout.ts` — creates, synchronizes, and disposes the
+  plugin-owned layout stylesheet that widens the shipped StatsLine text budget
+  while `ja` is active; resolves the component's hashed CSS-module class at
+  runtime from its registration tag and degrades to shipped behavior when the
+  stylesheet is absent.
 - `src/client/dictionaries.ts` — defines the 29 Japanese namespace dictionaries
   and their platform or documented local key unions.
 - `scripts/build.ts` — emits declarations, the Host ESM entry, and the
