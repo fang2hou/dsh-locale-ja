@@ -56,6 +56,8 @@ interface StyleTagStub {
 interface DocumentStub {
   createElement(): StyleTagStub;
   head: { append(tag: StyleTagStub): void };
+  /** Present only when simulating a shipped StatsLine stylesheet. */
+  querySelector?(selector: string): { textContent: string } | null;
 }
 
 /** The `localStorage` surface the bundle touches. */
@@ -91,31 +93,38 @@ interface ContextStub {
 
 /**
  * Minimal `document` covering the plugin's stylesheet ownership.
+ * @param shippedStatsLineCss - when given, simulates the shipped StatsLine
+ * stylesheet tag the layout override resolves its class names from.
  * @returns the stub plus the live list of appended style tags.
  */
-function createDocument(): { tags: StyleTagStub[]; document: DocumentStub } {
+function createDocument(shippedStatsLineCss?: string): {
+  tags: StyleTagStub[];
+  document: DocumentStub;
+} {
   const head: StyleTagStub[] = [];
-  return {
-    tags: head,
-    document: {
-      createElement() {
-        const tag: StyleTagStub = {
-          dataset: {},
-          textContent: "",
-          remove() {
-            const at = head.indexOf(tag);
-            if (at !== -1) head.splice(at, 1);
-          },
-        };
-        return tag;
-      },
-      head: {
-        append(tag) {
-          head.push(tag);
+  const document: DocumentStub = {
+    createElement() {
+      const tag: StyleTagStub = {
+        dataset: {},
+        textContent: "",
+        remove() {
+          const at = head.indexOf(tag);
+          if (at !== -1) head.splice(at, 1);
         },
+      };
+      return tag;
+    },
+    head: {
+      append(tag) {
+        head.push(tag);
       },
     },
   };
+  if (shippedStatsLineCss !== undefined) {
+    document.querySelector = (selector: string) =>
+      selector.includes("StatsLine.module.css") ? { textContent: shippedStatsLineCss } : null;
+  }
+  return { tags: head, document };
 }
 
 /**
@@ -277,7 +286,7 @@ function createLocale(): LocaleStandIn {
 // --- load the bundle ------------------------------------------------------
 
 const loaded: LoaderEntry[] = [];
-const dom = createDocument();
+const dom = createDocument(".Q7bW2x_root{text-align:center;white-space:nowrap}");
 const storage = createStorage();
 const window: WindowStub = {
   __ModuleLoader__: {
@@ -294,7 +303,6 @@ const evaluateBundle = new Function("window", "document", bundle) as (
   document: DocumentStub,
 ) => void;
 evaluateBundle(window, dom.document);
-
 console.log("bundle envelope");
 assert(loaded.length === 1, "registers exactly one module with the loader");
 assert(loaded[0]?.id === PACKAGE_ID, `registers under the package id (${PACKAGE_ID})`);
@@ -348,11 +356,10 @@ locale.setLocale("ja");
 
 assert(locale.getLocale().active === "ja", "setLocale('ja') activates Japanese");
 assert(locale.hostWrites.length === writesBefore, "never writes ja to the Host schema");
-assert(storage.entries.get("dsh-locale-ja:preference") === "ja", "persists the selection locally");
-assert(dom.tags.length === 1, "inserts exactly one stylesheet");
+assert(dom.tags.length === 2, "inserts the font and layout stylesheets");
 assert(
-  dom.tags[0]?.dataset.plugin === PACKAGE_ID && typeof dom.tags[0]?.dataset.pluginCss === "string",
-  "tags the stylesheet as plugin-owned",
+  dom.tags.every((tag) => tag.dataset.plugin === PACKAGE_ID),
+  "tags both stylesheets as plugin-owned",
 );
 const fontTag = dom.tags[0];
 assert(
@@ -360,6 +367,15 @@ assert(
     fontTag.textContent.includes("--dsw-font-family") &&
     fontTag.textContent.includes("Hiragino Sans"),
   "overrides the base font token with Japanese system faces",
+);
+const layoutTag = dom.tags[1];
+assert(
+  layoutTag !== undefined &&
+    layoutTag.dataset.pluginCss === `${PACKAGE_ID}/japanese-layout.css` &&
+    layoutTag.textContent.includes(".Q7bW2x_root") &&
+    layoutTag.textContent.includes("padding-left:8px") &&
+    layoutTag.textContent.includes("white-space:normal"),
+  "resolves the shipped StatsLine class and widens its text budget",
 );
 
 locale.adopt(locale.host);

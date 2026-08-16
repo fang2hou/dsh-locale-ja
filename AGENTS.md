@@ -57,6 +57,8 @@ Local ground truth (always prefer over memory or naming guesses):
 - Real isolated DSH web for verification: `mise run e2e` (see DEVELOPMENT.md);
   manual install into your own profile is documented in DEVELOPMENT.md →
   "Testing against a real DSH".
+- Hot-linked local DSH web with live plugin hot reload for interactive work:
+  `mise run dev` (see DEVELOPMENT.md → "Local dev environment").
 
 ## DSH plugin development rules
 

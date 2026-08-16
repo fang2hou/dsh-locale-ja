@@ -13,6 +13,7 @@
 import type { ClientContext } from "@deepseek-ai/dsh-client-runtime/client";
 import { DICTS } from "./dictionaries.ts";
 import { createFontStylesheet } from "./font.ts";
+import { createLayoutStylesheet } from "./layout.ts";
 import { extendLocaleService, isJapaneseActive, JA } from "./locale-extension.ts";
 import { readPreference } from "./preference.ts";
 
@@ -39,16 +40,20 @@ export function apply(ctx: ClientContext): void {
 
   ctx.effect(() => {
     const font = createFontStylesheet();
+    const layout = createLayoutStylesheet();
     const sync = (): void => {
-      font.sync(isJapaneseActive(locale));
+      const japanese = isJapaneseActive(locale);
+      font.sync(japanese);
+      layout.sync(japanese);
     };
     sync();
     const unsubscribe = locale.subscribe(sync);
     return () => {
       unsubscribe();
       font.dispose();
+      layout.dispose();
     };
-  }, "locale-ja: japanese font");
+  }, "locale-ja: japanese font and layout");
 
   // Last word on the active locale: the shipped service has already settled on
   // the Host preference or the browser's own language by now.
