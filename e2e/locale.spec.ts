@@ -4,6 +4,7 @@ import { installPlugin, removePlugin, restartAndWait } from "./harness.ts";
 
 const BASE = process.env.DSH_BASE_URL ?? "http://127.0.0.1:3080";
 const FONT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-font.css"]';
+const LAYOUT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-layout.css"]';
 
 async function dismissOnboarding(page: Page) {
   // Onboarding dialogs (Internal Testing Notice, API-key setup) block the
@@ -114,6 +115,48 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     await expect(page.getByText("Language", { exact: true })).toBeVisible();
     expect(await page.locator(FONT_TAG).count()).toBe(0);
     expect(await page.evaluate(() => localStorage.getItem("dsh-locale-ja:preference"))).toBeNull();
+  });
+});
+
+test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome", () => {
+  // The container's DEEPSEEK_BASE_URL points at the host-side mock
+  // (e2e/mock-llm.ts), so a real turn completes without credentials.
+  test("reply arrives; stats row shows every segment without truncating", async ({ page }) => {
+    // Japanese comes back through the plugin's own persistence path.
+    await page.addInitScript(() => localStorage.setItem("dsh-locale-ja:preference", "ja"));
+    await page.goto("/");
+    await dismissOnboarding(page);
+    await expect(page.getByRole("button", { name: "設定", exact: true })).toBeVisible();
+    await expect(page.locator(LAYOUT_TAG)).toHaveCount(1);
+
+    // Start a workspace session through the composer's directory picker.
+    await page.getByRole("button", { name: "ワークスペースを選択" }).click();
+    const picker = page.getByRole("dialog");
+    await picker.waitFor();
+    await picker.getByRole("button", { name: "開く", exact: true }).click();
+    const composer = page.getByPlaceholder("作りたいものを入力してください");
+    await composer.waitFor({ timeout: 15_000 });
+
+    // One turn against the mock.
+    await composer.fill("統計行の表示テスト");
+    await page.getByRole("button", { name: "メッセージを送信" }).click();
+
+    // The mock's reply and the stats row underneath it. The reply's first
+    // line also becomes the session title, so match the first occurrence.
+    await expect(
+      page.getByText("これはモック LLM の応答です。", { exact: false }).first(),
+    ).toBeVisible({ timeout: 30_000 });
+    const stats = page.getByText("1 ターン · 1 ステップ", { exact: false }).first();
+    await expect(stats).toBeVisible();
+    await expect(page.getByText("ヒット率", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("出力 180 tok", { exact: false }).first()).toBeVisible();
+
+    // The layout override keeps the row readable: the line fits or wraps,
+    const overflow = await stats.evaluate((el) => {
+      const root = el.closest("div");
+      return root === null ? null : root.scrollWidth - root.clientWidth;
+    });
+    expect(overflow).toBe(0);
   });
 });
 

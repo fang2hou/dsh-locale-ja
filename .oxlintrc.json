@@ -18,9 +18,10 @@
       }
     },
     {
-      "files": ["e2e/**"],
+      // E2E phase flows, readiness polling, and the dev environment's boot
+      // waits are sequential by design.
+      "files": ["e2e/**", "scripts/dev-env.ts"],
       "rules": {
-        // E2E phase flows and readiness polling are sequential by design.
         "no-await-in-loop": "off"
       }
     },

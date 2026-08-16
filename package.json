@@ -56,6 +56,9 @@
     "format:check": "oxfmt --check .",
     "e2e:latest": "DSH_E2E_DSH_VERSION=latest node e2e/run-e2e.ts",
     "e2e": "node e2e/run-e2e.ts",
+    "dev": "node scripts/dev-env.ts start",
+    "dev:restart": "node scripts/dev-env.ts restart",
+    "dev:logs": "node scripts/dev-env.ts logs",
     "drift": "node scripts/check-dict-drift.ts"
   },
   "devDependencies": {

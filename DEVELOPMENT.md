@@ -59,6 +59,8 @@ mise run build          # node scripts/build.ts -> lib/
 mise run test           # pnpm test (browser-bundle integration test)
 mise run check          # typecheck + lint + format-check + build + test
 mise run clean          # remove lib/
+mise run dev            # persistent local DSH web, hot-reloading this plugin
+mise run dev-stop       # remove the dev container
 ```
 
 The project's main validation entry point is:
@@ -115,20 +117,22 @@ pnpm typecheck
 This is both the dictionary correctness check and the DSH-upgrade drift check
 at the pinned devDependency versions.
 
-## E2E testing (Docker + Playwright, no local install needed)
-
-`mise run e2e` verifies the plugin against a real, isolated DSH web:
-
-1. builds the package tarball from the current source (`pnpm pack`),
+1. builds the plugin tarball from the current source (`pnpm pack`),
 2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.0-rc.6`
    (`e2e/Dockerfile`),
 3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`,
 4. drives the real UI with Playwright from the host in three phases —
    baseline (no plugin), installed (日本語 selectable, applies, persists,
-   reverses), removed (back to English, menu back to 中文/English),
+   reverses; a mock-LLM conversation turn renders the Japanese reply and the
+   stats row), removed (back to English, menu back to 中文/English),
 5. installs/removes the plugin between phases via
    `dsh plugin --profile web add/remove` inside the container, and
    tears everything down.
+
+The suite runs a DeepSeek-compatible mock LLM (`e2e/mock-llm.ts`) on the
+host and points the container's `DEEPSEEK_BASE_URL`/`DEEPSEEK_API_KEY` at
+it through the `host.docker.internal` host-gateway mapping, so the
+conversation phase needs no real credentials or network access.
 
 Prerequisites: a running Docker daemon (OrbStack/Docker Desktop), and
 one-time `pnpm exec playwright install chromium`. CI runs the same suite on
@@ -143,6 +147,35 @@ current release):
 mise run e2e-latest                  # latest @deepseek-ai/dsh
 DSH_E2E_DSH_VERSION=0.1.0-rc.7 mise run e2e   # an exact upcoming version
 ```
+
+## Local dev environment (Docker + hot reload)
+
+`mise run dev` brings up a persistent, isolated DSH web for manual testing —
+the same pinned image the E2E suite uses — with this repository hot-linked
+into it:
+
+1. starts the container `dsh-locale-ja-dev` at `http://127.0.0.1:13080`
+   (override with `DSH_DEV_PORT`), bind-mounting the repo read-only and
+   installing it through pnpm's `link:` protocol, then
+2. stays in the foreground watching `src/` and the loader-level files,
+   rebuilding on every change.
+
+The environment also starts a DeepSeek-compatible mock LLM
+(`e2e/mock-llm.ts`) on `127.0.0.1:13090` and wires the container's
+`DEEPSEEK_BASE_URL`/`DEEPSEEK_API_KEY` to it, so manual conversations in the
+dev UI complete without a real API key.
+
+The reload chain after that is DSH's own dev mechanism (`dsh-client-hmr`):
+the server stat-polls every plugin's client bundle, and when the watcher's
+rebuild rewrites `lib/client.js`, the open page hot-swaps the plugin live —
+no browser refresh, and the plugin's disposers run on every swap. Changes to
+`cordis.patch.yml` or `package.json` restart DSH automatically (the loader
+composes the plugin tree at boot).
+
+Companion tasks: `mise run dev-stop` (remove the container; its profile state
+is throwaway by design), `mise run dev-restart` (manual DSH restart),
+`mise run dev-logs`. Test against another DSH with `DSH_DEV_DSH_VERSION`
+(exact version or `latest`), same override the E2E suite uses.
 
 ## Watching upstream DSH releases
 

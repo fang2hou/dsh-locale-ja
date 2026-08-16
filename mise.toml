@@ -49,6 +49,22 @@ run = "pnpm e2e"
 description = "Run the E2E suite against the npm registry's latest @deepseek-ai/dsh (requires Docker)."
 run = "pnpm e2e:latest"
 
+[tasks.dev]
+description = "Start (or reuse) a local DSH web in Docker with this repo hot-linked as the plugin, then watch src/ and rebuild — DSH HMR swaps changes into the open page. Prints the URL."
+run = "node scripts/dev-env.ts start"
+
+[tasks.dev-stop]
+description = "Remove the local dev DSH web container (mise run dev to recreate)."
+run = "node scripts/dev-env.ts stop"
+
+[tasks.dev-restart]
+description = "Restart DSH inside the dev container (for loader-level changes; the watcher restarts automatically for cordis.patch.yml/package.json)."
+run = "node scripts/dev-env.ts restart"
+
+[tasks.dev-logs]
+description = "Follow the dev container logs."
+run = "node scripts/dev-env.ts logs"
+
 [tasks.drift]
 description = "Check the Japanese dictionaries against a DSH version's shipped locale keys (default: latest; pass -- --dsh <version> to pin)."
 run = "pnpm drift"

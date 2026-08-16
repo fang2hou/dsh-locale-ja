@@ -47,26 +47,35 @@ export function pickFreePort(): Promise<number> {
   return promise;
 }
 
-export function startContainer(port: number, version: string): void {
+export function startContainer(port: number, version: string, mockLlmUrl?: string): void {
   // Idempotent: clear any leftover container from a previous aborted run.
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
   // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
-  // cannot reach; socat relays the loopback server to 0.0.0.0:3081.
-  // The browser-facing authority is 127.0.0.1:<port>, so that is what the
-  // /api browser-trust fence must trust.
-  run("docker", [
+  // cannot reach; socat relays the loopback server to 0.0.0.0:3081. The
+  // browser-facing authority is 127.0.0.1:<port>, so that is what the
+  // /api browser-trust fence must trust. host-gateway lets the container
+  // reach a host-side mock LLM (e2e/mock-llm.ts) on every docker flavor.
+  const args = [
     "run",
     "-d",
     "--name",
     CONTAINER,
+    "--add-host",
+    "host.docker.internal:host-gateway",
     "-p",
     `127.0.0.1:${port}:3081`,
+  ];
+  if (mockLlmUrl !== undefined) {
+    args.push("-e", `DEEPSEEK_BASE_URL=${mockLlmUrl}`, "-e", "DEEPSEEK_API_KEY=mock-key");
+  }
+  args.push(
     `${IMAGE}:dsh-${version}`,
     "sh",
     "-c",
     "socat TCP-LISTEN:3081,bind=0.0.0.0,fork,reuseaddr TCP:127.0.0.1:3080 " +
       `& dsh web --host 127.0.0.1 --port 3080 --trusted-host 127.0.0.1:${port} --trusted-host localhost:${port}`,
-  ]);
+  );
+  run("docker", args);
 }
 
 export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): Promise<void> {
