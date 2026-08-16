@@ -146,9 +146,9 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
     await expect(
       page.getByText("これはモック LLM の応答です。", { exact: false }).first(),
     ).toBeVisible({ timeout: 30_000 });
-    const stats = page.getByText("1 ターン · 1 ステップ", { exact: false }).first();
+    const stats = page.getByText("1 ﾀｰﾝ · 1 ｽﾃｯﾌﾟ", { exact: false }).first();
     await expect(stats).toBeVisible();
-    await expect(page.getByText("ヒット率", { exact: false }).first()).toBeVisible();
+    await expect(page.getByText("ﾋｯﾄ率", { exact: false }).first()).toBeVisible();
     await expect(page.getByText("出力 180 tok", { exact: false }).first()).toBeVisible();
 
     // The layout override keeps the row readable: the line fits or wraps,
