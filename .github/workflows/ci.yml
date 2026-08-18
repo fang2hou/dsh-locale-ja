@@ -31,28 +31,6 @@ jobs:
       - name: Check (typecheck, lint, format-check, build, test)
         run: mise run check
 
-  validate-pr-title:
-    name: Validate PR title
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Install mise and tools
-        uses: jdx/mise-action@v4
-
-      - name: Configure git identity (required by cog)
-        run: |
-          git config --global user.name "pr-title-check"
-          git config --global user.email "pr-title-check@users.noreply.github.com"
-
-      - name: Verify PR title (cog verify)
-        run: cog verify "$PR_TITLE"
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-
   secret-scan:
     name: secret scanning (gitleaks)
     runs-on: ubuntu-latest
@@ -90,7 +68,7 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browser (chromium)
-        run: pnpm exec playwright install --with-deps chromium
+        run: mise run playwright
 
       - name: Run E2E (build, pack, docker dsh web, playwright)
         run: mise run e2e

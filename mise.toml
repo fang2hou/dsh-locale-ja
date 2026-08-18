@@ -44,6 +44,10 @@ run = "pnpm e2e"
 description = "Run the E2E suite against the npm registry's latest @deepseek-ai/dsh (requires Docker)."
 run = "pnpm e2e:latest"
 
+[tasks.playwright]
+description = "Install the Playwright browser (chromium) used by the e2e suite."
+run = "pnpm exec playwright install --with-deps chromium"
+
 [tasks.dev]
 description = "Start (or reuse) a local DSH web in Docker with this repo hot-linked as the plugin, then watch src/ and rebuild — DSH HMR swaps changes into the open page. Prints the URL."
 run = "node scripts/dev-env.ts start"
