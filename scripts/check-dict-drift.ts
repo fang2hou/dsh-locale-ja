@@ -307,7 +307,7 @@ try {
     console.error(`\ndictionary drift against @deepseek-ai/dsh@${version}:`);
     for (const failure of failures) console.error(`  - ${failure}`);
     console.error(
-      "\nFix: update the devDependencies + dictionaries in src/client/dictionaries.ts\n(and the pinned e2e version in e2e/harness.mjs) for this DSH release.",
+      "\nFix: update the devDependencies + dictionaries in src/client/dictionaries.ts\n(and the pinned e2e version in e2e/harness.ts) for this DSH release.",
     );
   } else {
     console.log(`✔ dictionaries match @deepseek-ai/dsh@${version}`);
