@@ -52,24 +52,24 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browser (chromium)
-        run: pnpm exec playwright install --with-deps chromium
+        run: mise run playwright
 
       # Both checks run even when the first fails (`if: !cancelled()`): the
       # drift result plus the e2e result together say whether the fix is a
       # dictionary refresh or an adapter change.
-      - name: Dictionary drift check (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
+      - name: Check dictionary drift (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
         if: ${{ !cancelled() }}
-        run: node scripts/check-dict-drift.ts --dsh "$DSH_VERSION"
+        run: mise run drift -- --dsh "$DSH_VERSION"
         env:
           DSH_VERSION: ${{ steps.dsh.outputs.version }}
 
-      - name: E2E (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
+      - name: Run e2e (@deepseek-ai/dsh@${{ steps.dsh.outputs.version }})
         if: ${{ !cancelled() }}
         run: mise run e2e
         env:
           DSH_E2E_DSH_VERSION: ${{ steps.dsh.outputs.version }}
 
-      - name: Summary
+      - name: Write upstream watch summary
         if: ${{ always() }}
         run: |
           {

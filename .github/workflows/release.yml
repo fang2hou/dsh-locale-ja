@@ -44,9 +44,9 @@ jobs:
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browser (chromium)
-        run: pnpm exec playwright install --with-deps chromium
+        run: mise run playwright
 
-      - name: E2E against real DSH web (Docker + Playwright)
+      - name: Run e2e against real DSH web (Docker + Playwright)
         run: mise run e2e
 
       # Runs after the checks: `npm version` rewrites package.json, which must
