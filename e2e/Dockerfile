@@ -11,7 +11,7 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ socat \
   && rm -rf /var/lib/apt/lists/*
 
-ARG DSH_VERSION=0.1.0-rc.6
+ARG DSH_VERSION=0.1.0-rc.7
 ARG PNPM_VERSION=11
 RUN npm install -g --no-fund --no-audit \
   --allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs \

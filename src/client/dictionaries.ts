@@ -67,7 +67,7 @@ import type {} from "@deepseek-ai/dsh-session-log-export/client";
 
 /**
  * `directory-browser` keys, from
- * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.6`, which
+ * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.7`, which
  * registers through the untyped overload and merges no namespace at all.
  */
 type DirectoryBrowserKey =
@@ -87,7 +87,7 @@ type DirectoryBrowserKey =
 
 /**
  * `permission.access` keys, from
- * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.6`. `PermissionAccessKey`
+ * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.7`. `PermissionAccessKey`
  * lives in a module that package's `./client` export does not re-export.
  */
 type PermissionAccessKey =
@@ -98,7 +98,7 @@ type PermissionAccessKey =
   | "confirm.enable";
 
 /**
- * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.6`.
+ * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.7`.
  * Its `./client` export re-exports nothing, so neither `TrajectoryKey` nor its
  * `LocaleNamespaceMap` merge is reachable.
  */
@@ -394,6 +394,8 @@ const question: LocaleDictOf<"question"> = {
   "error.unanswered": "オプションを選択するか、カスタム回答を入力してください。",
   "nav.prev": "前の質問",
   "nav.next": "次の質問",
+  "nav.minimize": "質問カードを折りたたむ",
+  "nav.maximize": "質問カードを展開",
   "nav.cancel": "すべての質問を破棄",
   "option.recommended": "推奨",
   "custom.placeholder": "回答を入力",
