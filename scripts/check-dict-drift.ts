@@ -24,6 +24,14 @@ import { resolveDshVersion } from "./dsh-version.ts";
 const WEB_APP_PACKAGE = "@deepseek-ai/dsh-web-app";
 
 /**
+ * The package that owns the `LocaleNamespaceMap` interface every client
+ * package augments. Since the 0.1.0-rc.8 wave it ships only as a
+ * devDependency of those packages, so a web-tree install no longer includes
+ * it — install it alongside the tree or the probe import cannot resolve.
+ */
+const NAMESPACE_MAP_PACKAGE = "@deepseek-ai/dsh-client-ui-slots";
+
+/**
  * A declaration file whose namespace merge is not reachable through the
  * package `exports` map (`./client` re-exports nothing of it). Upstream
  * internals: if the path moves, this check fails loudly (module resolution
@@ -80,6 +88,7 @@ function installWebTree(dir: string, version: string): void {
       "--no-fund",
       "--loglevel=error",
       `${WEB_APP_PACKAGE}@${version}`,
+      `${NAMESPACE_MAP_PACKAGE}@${version}`,
     ],
     { cwd: dir, encoding: "utf8" },
   );
@@ -185,7 +194,7 @@ function mergedNamespaces(root: string, packages: string[]): string[] {
   const { checker, source } = createProbeProgram(root, [
     ...packages.map((pkg) => `import type {} from "${pkg}/client";`),
     `import type {} from "./node_modules/${MERGE_DECLARATION}";`,
-    'import type { LocaleNamespaceMap } from "@deepseek-ai/dsh-client-ui-slots";',
+    `import type { LocaleNamespaceMap } from "${NAMESPACE_MAP_PACKAGE}";`,
     "export type AllNamespaces = keyof LocaleNamespaceMap & string;",
   ]);
   return literalUnionOf(checker, source, "AllNamespaces");
@@ -200,7 +209,7 @@ function mergedNamespaceKeys(
   const { checker, source } = createProbeProgram(root, [
     ...packages.map((pkg) => `import type {} from "${pkg}/client";`),
     `import type {} from "./node_modules/${MERGE_DECLARATION}";`,
-    'import type { LocaleNamespaceMap } from "@deepseek-ai/dsh-client-ui-slots";',
+    `import type { LocaleNamespaceMap } from "${NAMESPACE_MAP_PACKAGE}";`,
     ...namespaces.map(
       (ns, index) => `export type K${index} = LocaleNamespaceMap[${JSON.stringify(ns)}] & string;`,
     ),

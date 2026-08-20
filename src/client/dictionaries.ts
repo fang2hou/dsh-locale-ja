@@ -188,11 +188,17 @@ const conversation: LocaleDictOf<"conversation"> = {
   "image.fileTooLarge": "画像 1 枚のサイズは {size} 以下にしてください",
   "image.totalTooLarge": "画像の合計サイズが {size} を超えています。一部を削除してください",
   "image.tooManyPixels": "画像の解像度が大きすぎます。圧縮してから再試行してください",
+  "image.dimensionTooLarge":
+    "画像の幅と高さはそれぞれ {size}px 以内にしてください。縮小してから再試行してください",
   "image.modelUnsupported":
     "現在のモデルは画像に対応していません。画像対応のモデルに切り替えてください",
   "image.subagentUnsupported": "サブエージェントセッションではまだ画像を利用できません",
   "image.sendFailed":
     "画像の送信に失敗しました（{reason}）。画像を再度追加してから送信してください",
+  "fileOpen.title": "ファイルを開けませんでした",
+  "fileOpen.unknown": "このファイルを開けませんでした",
+  "fileOpen.folderTitle": "フォルダーを開けませんでした",
+  "fileOpen.folderUnknown": "このフォルダーを開けませんでした",
   "context.aria": "コンテキスト使用量 {percent}",
   "context.used": "コンテキスト使用量",
   "context.system": "システムプロンプト",
@@ -260,6 +266,8 @@ const conversation: LocaleDictOf<"conversation"> = {
   "message.stopped": "停止しました",
   "message.branch": "新しい会話で分岐",
   "message.branchUnavailable": "完了したターンの最終メッセージからのみ分岐できます",
+  "message.referenceSummary": "参照セッション · {labels}",
+  "message.referenceSeparator": "、",
   "message.retry.active": "モデルリクエストを再試行中",
   "message.retry.cancelled": "モデルリクエストの再試行をキャンセルしました",
   "message.retry.started": "モデルリクエストを再試行しました",
@@ -280,6 +288,8 @@ const conversation: LocaleDictOf<"conversation"> = {
   "command.failed": "コマンド失敗",
   "command.done": "完了",
   "command.title": "コマンド",
+  "command.imagesUnsupported":
+    "/{command} は画像添付に対応していません。先に画像を取り除いてください",
   "approval.waiting": "承認待ち",
   "approval.detail.aria": "承認の詳細",
   "approval.escalation": "ツール {toolName} が権限昇格を要求しています",
@@ -375,6 +385,7 @@ const feedback: LocaleDictOf<"feedback"> = {
   "note.placeholder": "この回答の良かった点、気になった点を教えてください（任意）",
   "note.save": "保存",
   "note.cancel": "キャンセル",
+  "note.dialog": "フィードバック",
   "note.aria": "フィードバックコメント",
   "error.conflict": "このフィードバックは別の場所で変更されました。最新の状態を表示しています",
   "error.load": "フィードバックの読み込みに失敗しました",
@@ -510,6 +521,8 @@ const settingsModels: LocaleDictOf<"settings.models"> = {
   fetchTitle: "追加するモデルを選択",
   fetchDescription:
     "以下はプロバイダーで利用可能なモデルです。追加するモデルにチェックを入れてください。",
+  fetchSelectAll: "すべて選択",
+  fetchDeselectAll: "すべて解除",
   fetchAdopt: "選択した項目を追加",
   customAdd: "カスタムプロバイダーを追加",
   customTitle: "カスタムプロバイダー",
@@ -611,6 +624,8 @@ const command: LocaleDictOf<"command"> = {
   "status.empty": "オプションなし",
   "overlay.aria": "/{command} オプション",
   "listbox.aria": "/{command} の一致項目",
+  "notice.imagesUnsupported":
+    "/{command} は画像添付に対応していません。先に画像を取り除いてください",
 };
 
 const cordis: LocaleDictOf<"cordis"> = {
