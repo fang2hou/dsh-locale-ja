@@ -67,13 +67,13 @@ const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string; keyPattern: RegExp 
   },
 ];
 
-/** Parse `--dsh <version|latest>` (default `latest`). */
+/** Parse `--dsh <version|next|latest>` (default `next`). */
 function parseArgs(argv: string[]): string {
   const flag = argv.indexOf("--dsh");
   if (flag !== -1 && argv[flag + 1]) return argv[flag + 1]!;
   const inline = argv.find((arg) => arg.startsWith("--dsh="));
   if (inline) return inline.slice("--dsh=".length);
-  return "latest";
+  return "next";
 }
 
 /** Install the DSH web tree for `version` into `dir`; throws with npm's output on failure. */

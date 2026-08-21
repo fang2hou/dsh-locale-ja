@@ -40,9 +40,9 @@ run = "pnpm test"
 description = "Run the Docker + Playwright E2E suite against a real DSH web (requires Docker)."
 run = "pnpm e2e"
 
-[tasks.e2e-latest]
-description = "Run the E2E suite against the npm registry's latest @deepseek-ai/dsh (requires Docker)."
-run = "pnpm e2e:latest"
+[tasks.e2e-next]
+description = "Run the E2E suite against the npm registry's next @deepseek-ai/dsh (requires Docker)."
+run = "pnpm e2e:next"
 
 [tasks.playwright]
 description = "Install the Playwright browser (chromium) used by the e2e suite."
@@ -65,7 +65,7 @@ description = "Follow the dev container logs."
 run = "node scripts/dev-env.ts logs"
 
 [tasks.drift]
-description = "Check the Japanese dictionaries against a DSH version's shipped locale keys (default: latest; pass -- --dsh <version> to pin)."
+description = "Check the Japanese dictionaries against a DSH version's shipped locale keys (default: next; pass -- --dsh <version> to pin)."
 run = "pnpm drift"
 
 [tasks.check]

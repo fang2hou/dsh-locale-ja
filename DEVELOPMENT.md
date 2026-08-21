@@ -3,7 +3,7 @@
 This document describes how to develop, validate, and release
 `dsh-locale-ja`.
 
-The project is pre-release (`0.2.0`) and supports the DSH `0.1.0-rc.7` `web`
+The project is pre-release (`0.2.0`) and supports the DSH `0.1.1-rc.2` `web`
 profile and browser UI only. The `0.1.0` on npm is the older, dynamically
 loaded artifact; the standard package ships from `0.2.0`.
 
@@ -141,7 +141,7 @@ at the pinned devDependency versions.
 
 `mise run e2e` (`e2e/run-e2e.ts`):
 1. builds the plugin tarball from the current source (`pnpm pack`),
-2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.0-rc.7`
+2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.1-rc.2`
    (`e2e/Dockerfile`),
 3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`,
 4. drives the real UI with Playwright from the host in three phases —
@@ -163,12 +163,11 @@ every PR (`e2e` job) and gates releases on it. It is deliberately not part of
 `mise run check` or any git hook.
 
 The DSH under test defaults to the pinned version above; override it with
-`DSH_E2E_DSH_VERSION` (an exact version, or `latest` for the registry's
-current release):
+`DSH_E2E_DSH_VERSION` (an exact version, `next`, or `latest`):
 
 ```bash
-mise run e2e-latest                  # latest @deepseek-ai/dsh
-DSH_E2E_DSH_VERSION=0.1.0-rc.7 mise run e2e   # an exact upcoming version
+mise run e2e-next                   # next @deepseek-ai/dsh
+DSH_E2E_DSH_VERSION=0.1.1-rc.2 mise run e2e   # an exact upcoming version
 ```
 
 ## Local dev environment (Docker + hot reload)
@@ -198,16 +197,17 @@ composes the plugin tree at boot).
 Companion tasks: `mise run dev-stop` (remove the container; its profile state
 is throwaway by design), `mise run dev-restart` (manual DSH restart),
 `mise run dev-logs`. Test against another DSH with `DSH_DEV_DSH_VERSION`
-(exact version or `latest`), same override the E2E suite uses.
+(exact version, `next`, or `latest`), same override the E2E suite uses.
 
 ## Watching upstream DSH releases
 
 DSH is a developer preview that ships faster than this plugin pins it. The
-`E2E latest DSH` workflow (`.github/workflows/e2e-upstream.yml`) runs twice a
-day on `main` against the registry's latest release and fails the run — and
-emails the repo owner — when upstream drifts:
+`E2E next DSH` workflow (`.github/workflows/e2e-upstream.yml`) runs twice a
+day on `main` against the registry's `next` release — the prerelease line the
+plugin tracks — and fails the run — and emails the repo owner — when upstream
+drifts:
 
-- **E2E on the latest DSH** catches runtime breakage (locale service
+- **E2E on the next DSH** catches runtime breakage (locale service
   contracts, plugin loading, UI structure).
 - **`mise run drift`** (`scripts/check-dict-drift.ts`) installs that
   release's full web tree into a throwaway directory and diffs the Japanese
@@ -216,7 +216,7 @@ emails the repo owner — when upstream drifts:
   leaks through), stale keys, and uncovered or removed namespaces.
 
 Both checks also run on manual dispatch, where a `dsh_version` input accepts
-an exact version to preview a release before it becomes `latest`. A red
+an exact version to preview a release before the pin moves to it. A red
 nightly means: pull that DSH version into devDependencies and
 `e2e/harness.ts`'s pin, refresh `src/client/dictionaries.ts`, and release.
 

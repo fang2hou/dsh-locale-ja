@@ -7,7 +7,7 @@ agents modify the codebase. Keep it short and operational.
 ## What this project is
 
 `@fang2hou/dsh-locale-ja` is a **standard DSH client plugin package** for
-DeepSeek Harness (DSH) `0.1.0-rc.7`, supported on the `web` profile. Its Host
+DeepSeek Harness (DSH) `0.1.1-rc.2`, supported on the `web` profile. Its Host
 half (`src/index.ts`) exports an empty `apply()` only so the package can mount a
 Loader row; its browser half (`src/client/index.ts`) performs locale
 registration and all user-facing work. `dsh plugin --profile web add
@@ -48,7 +48,7 @@ registration and all user-facing work. `dsh plugin --profile web add
    must fail loudly when the installed runtime no longer exposes that contract
    and must keep the original methods for teardown; see
    [ADR-0002](./docs/adr/0002-extend-the-locale-service-through-internal-fields.md).
-   DSH `0.1.0-rc.7` has no public API for adding a selectable locale, so this
+   DSH `0.1.1-rc.2` has no public API for adding a selectable locale, so this
    boundary makes the compatibility risk explicit and contained.
 
 5. **Japanese persistence must remain client-side, and `setLocale('ja')` must
@@ -70,10 +70,10 @@ registration and all user-facing work. `dsh plugin --profile web add
 7. **Dictionaries must use the platform's own compile-time key unions whenever
    they are exposed.** `src/client/dictionaries.ts` must keep local unions only
    for `directory-browser`
-   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.7`),
+   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.1-rc.2`),
    `permission.access`
-   (`@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.7`), and
-   `trajectory` (`@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.7`), naming
+   (`@deepseek-ai/dsh-client-ui-permission-presets@0.1.1-rc.2`), and
+   `trajectory` (`@deepseek-ai/dsh-client-ui-trajectory@0.1.1-rc.2`), naming
    each copied source and version; `pnpm typecheck` is the drift check.
    This makes platform key renames, additions, and removals compile-time
    failures while keeping the three unavailable unions auditable.

@@ -67,7 +67,7 @@ import type {} from "@deepseek-ai/dsh-session-log-export/client";
 
 /**
  * `directory-browser` keys, from
- * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.7`, which
+ * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.1-rc.2`, which
  * registers through the untyped overload and merges no namespace at all.
  */
 type DirectoryBrowserKey =
@@ -87,7 +87,7 @@ type DirectoryBrowserKey =
 
 /**
  * `permission.access` keys, from
- * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.7`. `PermissionAccessKey`
+ * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.1-rc.2`. `PermissionAccessKey`
  * lives in a module that package's `./client` export does not re-export.
  */
 type PermissionAccessKey =
@@ -98,7 +98,7 @@ type PermissionAccessKey =
   | "confirm.enable";
 
 /**
- * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.7`.
+ * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.1-rc.2`.
  * Its `./client` export re-exports nothing, so neither `TrajectoryKey` nor its
  * `LocaleNamespaceMap` merge is reachable.
  */
@@ -864,6 +864,7 @@ const subagent: LocaleDictOf<"subagent"> = {
   "count.total.other": "{count} つのサブエージェント",
   "count.running.one": "{count} つのサブエージェントが実行中",
   "count.running.other": "{count} つのサブエージェントが実行中",
+  "switcher.aria": "サブエージェントを切り替え：{title}",
   "tree.aria": "サブエージェントセッション",
   "readonly.oneShot.title": "ワンショットサブエージェントレコード",
   "readonly.title": "このサブエージェントは一時的に読み取り専用です",

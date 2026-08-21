@@ -1,9 +1,10 @@
-name: E2E latest DSH
+name: E2E next DSH
 
-# Twice a day, verify the plugin against the registry's latest
-# @deepseek-ai/dsh — dictionary drift plus a full e2e — so an upstream release
-# that breaks the plugin or strands Japanese keys turns a scheduled run red
-# instead of waiting for the next manual upgrade.
+# Twice a day, verify the plugin against the registry's next
+# @deepseek-ai/dsh — the prerelease line the plugin tracks — dictionary drift
+# plus a full e2e — so an upstream release that breaks the plugin or strands
+# Japanese keys turns a scheduled run red instead of waiting for the next
+# manual upgrade.
 
 on:
   schedule:
@@ -11,9 +12,9 @@ on:
   workflow_dispatch:
     inputs:
       dsh_version:
-        description: "DSH version under test (exact version, or 'latest')"
+        description: "DSH version under test (exact version, 'next', or 'latest')"
         required: false
-        default: "latest"
+        default: "next"
 
 permissions:
   contents: read
@@ -24,7 +25,7 @@ concurrency:
 
 jobs:
   upstream:
-    name: dictionary drift + e2e (latest DSH)
+    name: dictionary drift + e2e (next DSH)
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -43,7 +44,7 @@ jobs:
           version=$(node scripts/dsh-version.ts "$DSH_VERSION_SPEC")
           echo "version=$version" >> "$GITHUB_OUTPUT"
         env:
-          DSH_VERSION_SPEC: ${{ inputs.dsh_version || 'latest' }}
+          DSH_VERSION_SPEC: ${{ inputs.dsh_version || 'next' }}
 
       - name: Cache Playwright browsers
         uses: actions/cache@v6
