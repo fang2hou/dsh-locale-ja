@@ -8,7 +8,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
-export const DEFAULT_DSH_VERSION = "0.1.0-rc.7";
+export const DEFAULT_DSH_VERSION = "0.1.1-rc.1";
 
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 180_000);
 

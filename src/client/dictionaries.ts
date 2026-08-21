@@ -67,7 +67,7 @@ import type {} from "@deepseek-ai/dsh-session-log-export/client";
 
 /**
  * `directory-browser` keys, from
- * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.0-rc.7`, which
+ * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.1-rc.1`, which
  * registers through the untyped overload and merges no namespace at all.
  */
 type DirectoryBrowserKey =
@@ -87,10 +87,13 @@ type DirectoryBrowserKey =
 
 /**
  * `permission.access` keys, from
- * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.0-rc.7`. `PermissionAccessKey`
+ * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.1-rc.1`. `PermissionAccessKey`
  * lives in a module that package's `./client` export does not re-export.
  */
 type PermissionAccessKey =
+  | "preset.readOnly"
+  | "preset.workspaceWrite"
+  | "preset.fullAccess"
   | "confirm.title"
   | "confirm.description"
   | "confirm.acknowledge"
@@ -98,7 +101,7 @@ type PermissionAccessKey =
   | "confirm.enable";
 
 /**
- * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.0-rc.7`.
+ * `trajectory` keys, from `@deepseek-ai/dsh-client-ui-trajectory@0.1.1-rc.1`.
  * Its `./client` export re-exports nothing, so neither `TrajectoryKey` nor its
  * `LocaleNamespaceMap` merge is reachable.
  */
@@ -216,6 +219,9 @@ const conversation: LocaleDictOf<"conversation"> = {
     "エージェント実行中のみ有効。Cmd/Ctrl+Enter はもう一方の動作になります",
   "settings.enter.queue": "キューに送信",
   "settings.enter.steer": "割り込み送信",
+  "access.preset.readOnly": "読み取り専用",
+  "access.preset.workspaceWrite": "ワークスペース書き込み",
+  "access.preset.fullAccess": "Full Access",
   "access.confirm.title": "Full Access を有効にしますか？",
   "access.confirm.description":
     "Full Access を有効にすると、エージェントの確認ステップが減り、機密操作、ファイル変更、外部コマンドを含むより多くの操作を直接実行できるようになります。現在のタスクを信頼できる場合にのみ使用してください。",
@@ -749,6 +755,9 @@ const settingsPermission: LocaleDictOf<"settings.permission"> = {
   description: "新しいセッションのデフォルトの権限モードを選択",
   loading: "読み込み中",
   unavailable: "利用不可",
+  "preset.readOnly": "読み取り専用",
+  "preset.workspaceWrite": "ワークスペース書き込み",
+  "preset.fullAccess": "Full Access",
   "confirm.title": "Full Access を有効にしますか？",
   "confirm.description":
     "Full Access を有効にすると、新しいセッションでの確認ステップが減り、機密操作、ファイル変更、外部コマンドを含むより多くの操作を直接実行できるようになります。以降のタスクを信頼できる場合にのみ使用してください。",
@@ -758,6 +767,9 @@ const settingsPermission: LocaleDictOf<"settings.permission"> = {
 };
 
 const permissionAccess: Record<PermissionAccessKey, string> = {
+  "preset.readOnly": "読み取り専用",
+  "preset.workspaceWrite": "ワークスペース書き込み",
+  "preset.fullAccess": "Full Access",
   "confirm.title": "Full Access を有効にしますか？",
   "confirm.description":
     "Full Access を有効にすると、エージェントの確認ステップが減り、機密操作、ファイル変更、外部コマンドを含むより多くの操作を直接実行できるようになります。現在のタスクを信頼できる場合にのみ使用してください。",
@@ -864,6 +876,7 @@ const subagent: LocaleDictOf<"subagent"> = {
   "count.total.other": "{count} つのサブエージェント",
   "count.running.one": "{count} つのサブエージェントが実行中",
   "count.running.other": "{count} つのサブエージェントが実行中",
+  "switcher.aria": "サブエージェントを切り替え：{title}",
   "tree.aria": "サブエージェントセッション",
   "readonly.oneShot.title": "ワンショットサブエージェントレコード",
   "readonly.title": "このサブエージェントは一時的に読み取り専用です",
