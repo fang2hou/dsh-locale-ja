@@ -54,16 +54,40 @@ const UNTYPED_TYPE_NAMESPACES: Record<string, { declaration: string; typeName: s
 
 /**
  * Namespaces whose keys exist only as dictionary literals inside the shipped
- * client bundle (no type anywhere). Keys are scanned from the bundle's quoted
- * property names — quoted string literals survive minification, and a bundle
- * shape change yields zero keys and fails loudly, which is exactly the drift
- * signal wanted here.
+ * client bundle (no type anywhere). Keys are read from the bundle's
+ * `locale.register(ns, …)` call sites — quoted string literals survive
+ * minification — so an unregistered namespace or a bundle shape change
+ * yields zero keys and fails loudly, which is exactly the drift signal
+ * wanted here.
  */
-const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string; keyPattern: RegExp }[] = [
+const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string }[] = [
   {
     ns: "directory-browser",
     pkg: "@deepseek-ai/dsh-client-ui-directory-picker-browse",
-    keyPattern: /^browser\.[a-zA-Z]+$/,
+  },
+  {
+    ns: "documentHtml",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "documentMarkdown",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "reference",
+    pkg: "@deepseek-ai/dsh-client-ui-reference",
+  },
+  {
+    ns: "sidebarCodePreview",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "sidebarImage",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "sidebarPdf",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
   },
 ];
 
@@ -242,25 +266,162 @@ function untypedTypeKeys(root: string): Map<string, string[]> {
 /** Keys of namespaces that register dictionaries only at runtime, scanned from bundles. */
 function runtimeScannedKeys(root: string): Map<string, string[]> {
   const keys = new Map<string, string[]>();
-  for (const { ns, pkg, keyPattern } of RUNTIME_SCANNED_NAMESPACES) {
+  for (const { ns, pkg } of RUNTIME_SCANNED_NAMESPACES) {
     const bundle = path.join(root, "node_modules", pkg, "lib", "client.js");
     if (!fs.existsSync(bundle)) {
       throw new Error(`runtime-scanned namespace "${ns}": bundle missing: ${bundle}`);
     }
     const text = fs.readFileSync(bundle, "utf8");
-    const found = new Set<string>();
-    for (const match of text.matchAll(/"([^"]+)":\s*(?=")/g)) {
-      const key = match[1]!;
-      if (keyPattern.test(key)) found.add(key);
-    }
+    const found = new Set<string>(registerCallKeys(text, ns));
     if (found.size === 0) {
       throw new Error(
-        `runtime-scanned namespace "${ns}": no keys matching ${keyPattern} in ${bundle} — the bundle shape changed, extraction needs a human look`,
+        `runtime-scanned namespace "${ns}": no register call for "${ns}" in ${bundle} — the bundle shape changed, extraction needs a human look`,
       );
     }
     keys.set(ns, [...found].toSorted());
   }
   return keys;
+}
+
+/**
+ * Extract the dictionary keys every `locale.register(ns, …)` call site in a
+ * bundle installs for `ns`. Handles the typed overload
+ * `register(ns, { zh, en })` (shorthand or renamed identifiers), the
+ * per-locale overload `register(ns, "zh", { … })` (inline literal or
+ * identifier, possibly referencing module constants), and the
+ * `for (const [locale, dict] of dictionaries)` array form.
+ */
+function registerCallKeys(text: string, ns: string): string[] {
+  const keys = new Set<string>();
+  // Module-scope string/array/object constants the call sites may reference.
+  const consts = new Map<string, unknown>();
+  for (const match of text.matchAll(/(?:const|let) ([A-Za-z_$][\w$]*) = (\{|\[|")/g)) {
+    const start = match.index + match[0].length - 1;
+    const literal =
+      match[2] === '"'
+        ? /"(?:[^"\\]|\\.)*"/.exec(text.slice(start))?.[0]
+        : balancedLiteral(text, start, true);
+    if (literal === undefined || literal === null) continue;
+    try {
+      consts.set(
+        match[1]!,
+        new Function(...consts.keys(), `return (${literal})`)(...consts.values()),
+      );
+    } catch {
+      // Constants referencing functions or unresolved names are irrelevant here.
+    }
+  }
+  const resolve = (code: string): unknown => {
+    const identifier = /^[$A-Za-z_][\w$]*$/.exec(code);
+    if (identifier && consts.has(identifier[0]!)) return consts.get(identifier[0]!);
+    try {
+      return new Function(...consts.keys(), `return (${code})`)(...consts.values());
+    } catch {
+      return undefined;
+    }
+  };
+  const nsMatchesNamespace = (argument: string): boolean => {
+    const literal = /^"(?:[^"\\]|\\.)*"$/.exec(argument);
+    if (literal) return JSON.parse(literal[0]) === ns;
+    const value = resolve(argument);
+    return value === ns;
+  };
+  const addDict = (value: unknown): void => {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) return;
+    for (const key of Object.keys(value)) keys.add(key);
+  };
+  for (const match of text.matchAll(/(?:locale|ctx\.locale)\.register\(/g)) {
+    const argumentsText = balancedLiteral(text, match.index + match[0].length - 1, false);
+    if (argumentsText === null) continue;
+    const args = splitArguments(argumentsText.slice(1, -1));
+    if (!nsMatchesNamespace(args[0] ?? "")) continue;
+    const second = args[1] ?? "";
+    const perLocale = /^"(zh|en)"$/.exec(second);
+    if (perLocale) {
+      addDict(resolve(args[2] ?? ""));
+      continue;
+    }
+    // `{ zh, en }` — shorthand identifiers or renamed `{ zh: X, en: Y }`.
+    for (const part of splitArguments(second.replace(/^\{|\}$/g, ""))) {
+      const named = /^(?:zh|en)\s*:\s*([$A-Za-z_][\w$]*)$/.exec(part);
+      addDict(resolve(named ? named[1]! : part));
+    }
+  }
+  // The `dictionaries` array form: register(LOCALE_NS, locale, dict) in a
+  // loop over `[["zh", {…}], ["en", {…}]]`. Attribute it to `ns` when the
+  // bundle declares a string constant holding that namespace id.
+  const declaresNamespace = [...consts.values()].includes(ns);
+  for (const match of text.matchAll(/const (\w+) = (\[)/g)) {
+    const array = balancedLiteral(text, match.index + match[0].length - 1, true);
+    if (array === null) continue;
+    const value = resolve(array);
+    if (!Array.isArray(value) || !declaresNamespace) continue;
+    for (const pair of value) {
+      if (Array.isArray(pair) && (pair[0] === "zh" || pair[0] === "en")) addDict(pair[1]);
+    }
+  }
+  return [...keys];
+}
+
+/** Read the balanced `{…}` / `(…)` / `[…]` literal starting at `start`. */
+function balancedLiteral(text: string, start: number, bracketsOnly: boolean): string | null {
+  let depth = 0;
+  let inString = false;
+  let stringOpener = "";
+  for (let i = start; i < text.length; i++) {
+    const char = text[i]!;
+    if (inString) {
+      if (char === "\\") i++;
+      else if (char === stringOpener) inString = false;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") {
+      // The literal itself must open with a bracket, not a quote; quotes
+      // nested inside are ordinary string contents.
+      if (i === start && !bracketsOnly) return null;
+      inString = true;
+      stringOpener = char;
+      continue;
+    }
+    if (char === "(" || char === "{" || char === "[") depth++;
+    else if (char === ")" || char === "}" || char === "]") {
+      depth--;
+      if (depth === 0) return text.slice(start, i + 1);
+    }
+  }
+  return null;
+}
+
+/** Split an argument list on top-level commas, preserving nested literals. */
+function splitArguments(argumentText: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let inString = false;
+  let stringOpener = "";
+  let current = "";
+  for (const char of argumentText) {
+    if (inString) {
+      current += char;
+      if (char === stringOpener) inString = false;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === "`") {
+      inString = true;
+      stringOpener = char;
+      current += char;
+      continue;
+    }
+    if (char === "(" || char === "{" || char === "[") depth++;
+    if (char === ")" || char === "}" || char === "]") depth--;
+    if (char === "," && depth === 0) {
+      parts.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim() !== "") parts.push(current.trim());
+  return parts;
 }
 
 /** Compare upstream key sets against the plugin's dictionaries; returns failure lines. */

@@ -1,11 +1,11 @@
 [tools]
-node = "24"
-pnpm = "11"
-cocogitto = "7"
-prek = "0.4"
-gitleaks = "8"
-actionlint = "1"
-shellcheck = "0.11"
+node = "lts"
+pnpm = "12"
+cocogitto = "latest"
+prek = "latest"
+gitleaks = "latest"
+actionlint = "latest"
+shellcheck = "latest"
 
 [tasks.install]
 description = "Install Node dependencies with pnpm."
