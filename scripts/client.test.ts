@@ -1,11 +1,6 @@
-/**
- * Integration test for the built browser bundle (`lib/client.js`): evaluates
- * it the way the shell does — through `window.__ModuleLoader__.load` — and
- * drives it against a stand-in locale service mirroring the shipped
- * `LocaleRuntime` semantics. Covers the loader envelope, the zero-`require`
- * purity, and the runtime behavior of the locale extension including full
- * teardown; `mise run test` builds first.
- */
+// Integration test for the built browser bundle (`lib/client.js`): evaluates
+// it through `window.__ModuleLoader__.load` the way the shell does, against
+// a stand-in locale service mirroring the shipped `LocaleRuntime`.
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,17 +11,12 @@ const { name: PACKAGE_ID } = JSON.parse(readFileSync(resolve(root, "package.json
 };
 const bundle = readFileSync(resolve(root, "lib/client.js"), "utf8");
 
-/** Namespaces the plugin must register Japanese dictionaries for. */
-const NAMESPACE_COUNT = 29;
+const NAMESPACE_COUNT = 42;
 
 let failures = 0;
 
-/**
- * Assert a condition, recording a failure instead of throwing so one broken
- * expectation still reports the rest.
- * @param condition - the expectation.
- * @param message - what was expected.
- */
+// Records failures instead of throwing so one broken expectation still
+// reports the rest.
 function assert(condition: boolean, message: string): void {
   if (condition) console.log(`  ✓ ${message}`);
   else {
@@ -37,59 +27,38 @@ function assert(condition: boolean, message: string): void {
 
 // --- browser stubs --------------------------------------------------------
 
-/** One style tag the stubbed `document` hands out. */
 interface StyleTagStub {
   dataset: Record<string, string>;
   textContent: string;
   remove(): void;
 }
 
-/** The `document` surface the bundle touches. */
 interface DocumentStub {
   createElement(): StyleTagStub;
   head: { append(tag: StyleTagStub): void };
-  /** Present only when simulating a shipped StatsLine stylesheet. */
-  querySelector?(selector: string): { textContent: string } | null;
 }
 
-/** The `localStorage` surface the bundle touches. */
-interface LocalStorageStub {
-  getItem(key: string): string | null;
-  setItem(key: string, value: string): void;
-  removeItem(key: string): void;
-}
-
-/** The `window` surface the loader envelope touches. */
 interface WindowStub {
   __ModuleLoader__: { load(entry: LoaderEntry): void };
-  localStorage: LocalStorageStub;
 }
 
-/** The contract the browser bundle must export. */
 interface ClientPlugin {
   inject: readonly string[];
   apply: (ctx: unknown) => void;
 }
 
-/** One module registered through the loader envelope. */
 interface LoaderEntry {
   id: string;
   factory: (require: (specifier: string) => unknown) => ClientPlugin;
 }
 
-/** The `ctx` surface the bundle's `apply` touches. */
 interface ContextStub {
   locale: LocaleStandIn;
   effect(fn: () => () => void, description?: string): void;
 }
 
-/**
- * Minimal `document` covering the plugin's stylesheet ownership.
- * @param shippedStatsLineCss - when given, simulates the shipped StatsLine
- * stylesheet tag the layout override resolves its class names from.
- * @returns the stub plus the live list of appended style tags.
- */
-function createDocument(shippedStatsLineCss?: string): {
+// Minimal `document` covering the plugin's stylesheet ownership.
+function createDocument(): {
   tags: StyleTagStub[];
   document: DocumentStub;
 } {
@@ -112,69 +81,45 @@ function createDocument(shippedStatsLineCss?: string): {
       },
     },
   };
-  if (shippedStatsLineCss !== undefined) {
-    document.querySelector = (selector: string) =>
-      selector.includes("StatsLine.module.css") ? { textContent: shippedStatsLineCss } : null;
-  }
   return { tags: head, document };
-}
-
-/**
- * Minimal `localStorage`.
- * @param initial - entries present before the plugin runs.
- * @returns the storage stub.
- */
-function createStorage(initial: Record<string, string> = {}): {
-  entries: Map<string, string>;
-  localStorage: LocalStorageStub;
-} {
-  const entries = new Map(Object.entries(initial));
-  return {
-    entries,
-    localStorage: {
-      getItem: (key) => entries.get(key) ?? null,
-      setItem: (key, value) => entries.set(key, value),
-      removeItem: (key) => entries.delete(key),
-    },
-  };
 }
 
 // --- locale service stand-in ---------------------------------------------
 
-/** One entry of the selectable locale list. */
 interface LocaleEntry {
   id: string;
   label: string;
 }
 
-/** The immutable snapshot the locale service hands the UI. */
 interface Snapshot {
   active: string;
   locales: readonly LocaleEntry[];
   revision: number;
 }
 
-/** One dictionary registration recorded by the stand-in. */
 interface Registration {
   ns: string;
   id: string;
   dict: unknown;
 }
 
-/** One write the stand-in forwarded to the Host scope. */
 interface HostWrite {
   field: string;
   value: string;
 }
 
-/** The Host settings scope the service syncs with. */
 interface HostScope {
   preference: string;
   set(field: string, value: string): void;
   getSnapshot(): { value?: { preference?: string } };
 }
 
-/** The recorded, drivable stand-in for the shipped `LocaleRuntime`. */
+interface LanguageRegistration {
+  id: string;
+  label: string;
+  fallback: string;
+}
+
 interface LocaleStandIn {
   registrations: Registration[];
   hostWrites: HostWrite[];
@@ -186,43 +131,46 @@ interface LocaleStandIn {
   getSnapshot(): Snapshot;
   subscribe(fn: () => void): () => void;
   register(ns: string, id: string, dict: unknown): () => void;
+  addLanguage(input: LanguageRegistration): () => void;
   setLocale(id: string): void;
   adopt(scope: HostScope): void;
-  publish(active: string, localeChanged: boolean): void;
+  publish(active: string, localeChanged: boolean, locales?: readonly LocaleEntry[]): void;
 }
 
-/**
- * A stand-in for the shipped `LocaleRuntime`, reproducing the behavior the
- * plugin depends on: a frozen snapshot, `publish` as the only mutation path,
- * `setLocale` rejecting unregistered ids and writing through to the Host, and
- * `adopt` following the Host scope.
- * @returns the service plus the recorded interactions.
- */
-function createLocale(): LocaleStandIn {
+// Mirrors the 0.1.5 `LocaleRuntime` contract the plugin depends on: frozen
+// snapshots, `addLanguage` re-resolving a stored `ja` preference,
+// `setLocale` writing through to the Host scope, `adopt` following it.
+function createLocale(initialHostPreference = "en"): LocaleStandIn {
   const registrations: Registration[] = [];
   const hostWrites: HostWrite[] = [];
   const listeners = new Set<() => void>();
+  const catalog = new Map<string, LanguageRegistration>([
+    ["zh", { id: "zh", label: "中文", fallback: "en" }],
+    ["en", { id: "en", label: "English", fallback: "en" }],
+  ]);
   const host: HostScope = {
-    preference: "en",
+    preference: initialHostPreference,
     set(field, value) {
       hostWrites.push({ field, value });
+      if (field === "preference") host.preference = value;
     },
     getSnapshot() {
       return { value: { preference: host.preference } };
     },
   };
+  let preference: string = initialHostPreference;
+  const localeList = (): readonly LocaleEntry[] =>
+    Object.freeze([...catalog.values()].map(({ id, label }) => ({ id, label })));
+  const resolveActive = (): string => (catalog.has(preference) ? preference : locale.provisional);
 
   const locale: LocaleStandIn = {
     registrations,
     hostWrites,
     host,
-    provisional: "zh",
+    provisional: "en",
     snapshot: Object.freeze({
-      active: "zh",
-      locales: Object.freeze([
-        { id: "zh", label: "中文" },
-        { id: "en", label: "English" },
-      ]),
+      active: catalog.has(initialHostPreference) ? initialHostPreference : "en",
+      locales: localeList(),
       revision: 0,
     }),
     events: [],
@@ -246,24 +194,37 @@ function createLocale(): LocaleStandIn {
         if (at !== -1) registrations.splice(at, 1);
       };
     },
+    addLanguage(input) {
+      if (catalog.has(input.id)) throw new Error(`locale "${input.id}" is already registered`);
+      catalog.set(input.id, input);
+      // publishCatalog: the stored preference re-resolves now that `ja` exists.
+      const active = resolveActive();
+      locale.publish(active, active !== locale.snapshot.active, localeList());
+      return () => {
+        if (catalog.get(input.id) !== input) return;
+        catalog.delete(input.id);
+        const next = resolveActive();
+        locale.publish(next, next !== locale.snapshot.active, localeList());
+      };
+    },
     setLocale(id) {
-      const match = locale.snapshot.locales.find((entry) => entry.id === id);
-      if (match === undefined) throw new Error(`locale "${id}" is not registered`);
-      if (locale.snapshot.active === match.id) return;
-      locale.publish(match.id, true);
-      host.set("preference", match.id);
+      if (!catalog.has(id)) throw new Error(`locale "${id}" is not registered`);
+      preference = id;
+      if (locale.snapshot.active !== id) locale.publish(id, true);
+      host.set("preference", id);
     },
     adopt(scope) {
       const section = scope.getSnapshot().value;
       if (section === undefined) return;
-      const target = section.preference ?? locale.provisional;
+      preference = section.preference ?? locale.provisional;
+      const target = resolveActive();
       if (locale.snapshot.active === target) return;
       locale.publish(target, true);
     },
-    publish(active, localeChanged) {
+    publish(active, localeChanged, locales = locale.snapshot.locales) {
       locale.snapshot = Object.freeze({
         active,
-        locales: locale.snapshot.locales,
+        locales,
         revision: locale.snapshot.revision + 1,
       });
       if (localeChanged) locale.events.push(active);
@@ -278,15 +239,13 @@ function createLocale(): LocaleStandIn {
 // --- load the bundle ------------------------------------------------------
 
 const loaded: LoaderEntry[] = [];
-const dom = createDocument(".Q7bW2x_root{text-align:center;white-space:nowrap}");
-const storage = createStorage();
+const dom = createDocument();
 const window: WindowStub = {
   __ModuleLoader__: {
     load(entry) {
       loaded.push(entry);
     },
   },
-  localStorage: storage.localStorage,
 };
 
 // eslint-disable-next-line no-new-func -- evaluating the artifact is the point
@@ -337,8 +296,8 @@ assert(
   locale.getLocale().locales.some((entry) => entry.id === "ja"),
   "adds 日本語 to the selectable locales",
 );
-assert(locale.events.length > 0, "emits a locale change so a mounted selector refreshes");
-assert(dom.tags.length === 0, "inserts no stylesheet while zh is active");
+assert(locale.getLocale().revision > 0, "publishes a fresh snapshot so mounted selectors refresh");
+assert(dom.tags.length === 0, "inserts no stylesheet while en is active");
 
 // --- switching to Japanese ----------------------------------------------
 
@@ -347,31 +306,29 @@ const writesBefore = locale.hostWrites.length;
 locale.setLocale("ja");
 
 assert(locale.getLocale().active === "ja", "setLocale('ja') activates Japanese");
-assert(locale.hostWrites.length === writesBefore, "never writes ja to the Host schema");
-assert(dom.tags.length === 2, "inserts the font and layout stylesheets");
+assert(locale.events.at(-1) === "ja", "emits a locale change for the switch");
+assert(
+  locale.hostWrites.length === writesBefore + 1 &&
+    locale.hostWrites.at(-1)?.field === "preference" &&
+    locale.hostWrites.at(-1)?.value === "ja",
+  "persists ja through the Host locale scope",
+);
+assert(dom.tags.length === 1, "inserts the font stylesheet");
 assert(
   dom.tags.every((tag) => tag.dataset.plugin === PACKAGE_ID),
-  "tags both stylesheets as plugin-owned",
+  "tags the stylesheet as plugin-owned",
 );
 const fontTag = dom.tags[0];
 assert(
   fontTag !== undefined &&
+    fontTag.dataset.pluginCss === `${PACKAGE_ID}/japanese-font.css` &&
     fontTag.textContent.includes("--dsw-font-family") &&
     fontTag.textContent.includes("Hiragino Sans"),
   "overrides the base font token with Japanese system faces",
 );
-const layoutTag = dom.tags[1];
-assert(
-  layoutTag !== undefined &&
-    layoutTag.dataset.pluginCss === `${PACKAGE_ID}/japanese-layout.css` &&
-    layoutTag.textContent.includes(".Q7bW2x_root") &&
-    layoutTag.textContent.includes("padding-left:8px") &&
-    layoutTag.textContent.includes("white-space:normal"),
-  "resolves the shipped StatsLine class and widens its text budget",
-);
 
 locale.adopt(locale.host);
-assert(locale.getLocale().active === "ja", "a Host preference sync does not revert Japanese");
+assert(locale.getLocale().active === "ja", "a Host preference sync keeps Japanese");
 
 // --- switching back -----------------------------------------------------
 
@@ -382,7 +339,6 @@ assert(
   locale.hostWrites.at(-1)?.field === "preference" && locale.hostWrites.at(-1)?.value === "en",
   "writes a shipped locale through to the Host",
 );
-assert(storage.entries.has("dsh-locale-ja:preference") === false, "clears the local override");
 assert(dom.tags.length === 0, "removes the stylesheet");
 
 // --- teardown -----------------------------------------------------------
@@ -413,9 +369,11 @@ assert(restored, "restores the shipped setLocale, which rejects unregistered ids
 // --- restoring a persisted selection ------------------------------------
 
 console.log("restoring a persisted selection");
-const persisted = createStorage({ "dsh-locale-ja:preference": "ja" });
-window.localStorage = persisted.localStorage;
-locale = createLocale();
+// The Host scope already holds `ja`; the runtime boots on a fallback because
+// the language does not exist yet, and re-resolves once the plugin registers
+// it — no plugin-side storage involved.
+locale = createLocale("ja");
+assert(locale.getLocale().active === "en", "boots on a fallback before the language exists");
 disposers = [];
 plugin.apply(ctxOf(locale));
 assert(locale.getLocale().active === "ja", "boots straight into Japanese");

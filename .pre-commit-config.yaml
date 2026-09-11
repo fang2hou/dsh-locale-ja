@@ -4,7 +4,7 @@ repos:
       - id: oxlint
         name: oxlint
         entry: pnpm
-        args: ["-s", "lint"]
+        args: ["--silent", "lint"]
         language: system
         types: ["ts"]
         pass_filenames: false
@@ -12,7 +12,7 @@ repos:
       - id: oxfmt
         name: oxfmt (check)
         entry: pnpm
-        args: ["-s", "format:check"]
+        args: ["--silent", "format:check"]
         language: system
         types: ["ts"]
         pass_filenames: false
@@ -20,7 +20,7 @@ repos:
       - id: typecheck
         name: tsc (typecheck)
         entry: pnpm
-        args: ["-s", "typecheck"]
+        args: ["--silent", "typecheck"]
         language: system
         types: ["ts"]
         pass_filenames: false

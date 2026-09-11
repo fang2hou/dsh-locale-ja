@@ -19,7 +19,6 @@ import {
   DEFAULT_DSH_VERSION,
 } from "./harness.ts";
 
-// Refuse to run without a Docker daemon.
 const probe = spawnSync("docker", ["info"], { stdio: "ignore" });
 if (probe.status !== 0) {
   console.error("Docker daemon not available — start Docker/OrbStack first");
@@ -31,7 +30,7 @@ console.log(`[e2e] testing against @deepseek-ai/dsh@${dshVersion}`);
 
 buildImage(dshVersion);
 
-// Pack the plugin from the current source (prepack runs the full build).
+// pnpm pack runs prepack, so the tarball is built from current source.
 const packDir = fs.mkdtempSync(path.join(tmpdir(), "dsh-locale-ja-e2e-"));
 execFileSync("pnpm", ["pack", "--pack-destination", packDir], { stdio: "inherit" });
 const tarball = fs
@@ -41,11 +40,10 @@ if (tarball === undefined) throw new Error(`no tarball found in ${packDir}`);
 const tarballPath = path.join(packDir, tarball);
 
 let exitCode = 1;
-// The mock LLM lets the suite drive real conversations without credentials;
-// the container reaches it through the host-gateway mapping.
 const mockPort = await pickFreePort();
-// Detached: this process blocks on spawnSync for whole phases; an in-process
-// server would starve behind those and dead-lock container-side fetches.
+// The mock runs detached: this process blocks on spawnSync for whole phases,
+// and an in-process server would starve behind those, dead-locking
+// container-side fetches.
 const mockLlm = await ensureMockLlm(mockPort);
 try {
   const port = await pickFreePort();

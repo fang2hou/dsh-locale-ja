@@ -1,6 +1,5 @@
-// Docker lifecycle helpers for the DSH web E2E suite. The default DSH version
-// pin mirrors the plugin's peerDependencies — bump both together; override
-// with DSH_E2E_DSH_VERSION to test an upcoming or newer DSH.
+// Docker lifecycle for the DSH web E2E suite. DEFAULT_DSH_VERSION mirrors
+// the plugin's peerDependencies — bump both together.
 import { execFileSync, spawnSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import net from "node:net";
@@ -8,9 +7,10 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
-export const DEFAULT_DSH_VERSION = "0.1.1-rc.2";
+export const DEFAULT_DSH_VERSION = "0.1.5-rc.2";
 
-const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 180_000);
+// First boot installs the whole profile dependency tree in-container.
+const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 300_000);
 
 function run(cmd: string, args: string[], opts: ExecFileSyncOptions = {}): void {
   execFileSync(cmd, args, { stdio: "inherit", ...opts });
@@ -49,10 +49,9 @@ export function startContainer(port: number, version: string, mockLlmUrl?: strin
   // Idempotent: clear any leftover container from a previous aborted run.
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
   // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
-  // cannot reach; socat relays the loopback server to 0.0.0.0:3081. The
-  // browser-facing authority is 127.0.0.1:<port>, so that is what the
-  // /api browser-trust fence must trust. host-gateway lets the container
-  // reach a host-side mock LLM (e2e/mock-llm.ts) on every docker flavor.
+  // cannot reach; socat relays the loopback server to 0.0.0.0:3081, and the
+  // browser-facing authority is what the /api fence must trust. host-gateway
+  // reaches the host-side mock LLM (e2e/mock-llm.ts) on every docker flavor.
   const args = [
     "run",
     "-d",
@@ -71,19 +70,19 @@ export function startContainer(port: number, version: string, mockLlmUrl?: strin
     "sh",
     "-c",
     "socat TCP-LISTEN:3081,bind=0.0.0.0,fork,reuseaddr TCP:127.0.0.1:3080 " +
-      `& dsh web --host 127.0.0.1 --port 3080 --trusted-host 127.0.0.1:${port} --trusted-host localhost:${port}`,
+      `& dsh web --host 127.0.0.1 --port 3080 --no-open --trusted-host 127.0.0.1:${port} --trusted-host localhost:${port}`,
   );
   run("docker", args);
 }
 
 export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): Promise<void> {
   const deadline = Date.now() + timeoutMs;
-  // First boot auto-initializes the profile and runs pnpm install inside the
-  // container, so allow minutes. Sequential polling by design.
+  // The browser-trust fence answers tokenless requests with 401/303 — any
+  // HTTP response means the server is up. Sequential polling by design.
   while (Date.now() < deadline) {
     try {
       const res = await fetch(baseUrl, { redirect: "manual" });
-      if (res.status === 200) return;
+      if (res.status > 0) return;
     } catch {
       // not up yet
     }
@@ -94,6 +93,20 @@ export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): P
   );
   spawnSync("docker", ["logs", CONTAINER], { stdio: "inherit" });
   throw new Error(`DSH web not ready at ${baseUrl} after ${timeoutMs} ms`);
+}
+
+// The /api browser-trust fence rejects tokenless requests, so every fresh
+// browser context enters through the per-boot process-token URL. Each boot
+// prints a fresh token — take the last one in the logs.
+export async function authUrl(baseUrl: string): Promise<string> {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const logs = spawnSync("docker", ["logs", CONTAINER], { encoding: "utf8" });
+    const token = [...(logs.stdout ?? "").matchAll(/token=([A-Za-z0-9_-]+)/g)].at(-1)?.[1];
+    if (token !== undefined) return `${baseUrl}/?token=${token}`;
+    await sleep(500);
+  }
+  throw new Error(`no process token found in docker logs of ${CONTAINER}`);
 }
 
 export function copyTarball(localPath: string): void {

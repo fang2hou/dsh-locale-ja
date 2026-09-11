@@ -1,14 +1,8 @@
-/**
- * The Japanese font stylesheet: plugin-owned, present only while `ja` is
- * active, re-facing the whole UI through the base `--dsw-font-family` token
- * (see ADR-0004).
- */
-
 const PLUGIN_ID = "@fang2hou/dsh-locale-ja";
 const TAG_ID = `${PLUGIN_ID}/japanese-font.css`;
 
-// Latin faces first, then Japanese faces so kana and kanji render with
-// Japanese glyph shapes; every family is OS-bundled, no web font is fetched.
+// Latin faces first, then Japanese faces, so kana and kanji render with
+// Japanese glyph shapes; every family is OS-bundled.
 const FONT_STACK =
   '-apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", ' +
   '"Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", "Noto Sans JP", sans-serif';
