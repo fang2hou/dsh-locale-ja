@@ -11,8 +11,8 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ socat \
   && rm -rf /var/lib/apt/lists/*
 
-ARG DSH_VERSION=0.1.1-rc.2
-ARG PNPM_VERSION=11
+ARG DSH_VERSION=0.1.5-rc.2
+ARG PNPM_VERSION=12
 RUN npm install -g --no-fund --no-audit \
   --allow-scripts=@deepseek-ai/dsh-subprocess-local,koffi,node-pty,@google/genai,protobufjs \
   pnpm@${PNPM_VERSION} @deepseek-ai/dsh@${DSH_VERSION}
@@ -26,4 +26,4 @@ WORKDIR /data/workspace
 EXPOSE 3081
 # The orchestrator overrides this with dynamic --port/--trusted-host flags;
 # it starts socat (0.0.0.0:3081 -> 127.0.0.1:3080) alongside dsh web.
-CMD ["dsh", "web", "--host", "127.0.0.1", "--port", "3080"]
+CMD ["dsh", "web", "--host", "127.0.0.1", "--port", "3080", "--no-open"]

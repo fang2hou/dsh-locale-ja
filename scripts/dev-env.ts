@@ -69,11 +69,13 @@ function inspect(format: string): string | null {
 
 async function waitReady(): Promise<void> {
   const deadline = Date.now() + BOOT_TIMEOUT_MS;
-  // Sequential polling by design; first boot takes minutes.
+  // Sequential polling by design; first boot takes minutes. The browser-trust
+  // fence answers tokenless requests with 401/303 — any HTTP response means
+  // the server is up.
   while (Date.now() < deadline) {
     try {
       const res = await fetch(baseUrl, { redirect: "manual" });
-      if (res.status === 200) return;
+      if (res.status > 0) return;
     } catch {
       // not up yet
     }
@@ -82,6 +84,13 @@ async function waitReady(): Promise<void> {
   console.error(`[dev] DSH web did not become ready at ${baseUrl}; recent logs:`);
   spawnSync("docker", ["logs", "--tail", "50", CONTAINER], { stdio: "inherit" });
   process.exit(1);
+}
+
+/** The authenticated entry URL: the fence requires the per-boot process token. */
+function authUrl(): string | null {
+  const result = spawnSync("docker", ["logs", CONTAINER], { encoding: "utf8" });
+  const token = /token=([A-Za-z0-9_-]+)/.exec(result.stdout ?? "")?.[1];
+  return token === undefined ? null : `${baseUrl}/?token=${token}`;
 }
 
 /**
@@ -132,7 +141,7 @@ function ensureContainer(version: string): boolean {
     "sh",
     "-c",
     "socat TCP-LISTEN:3081,bind=0.0.0.0,fork,reuseaddr TCP:127.0.0.1:3080 " +
-      `& dsh web --host 127.0.0.1 --port 3080 ` +
+      `& dsh web --host 127.0.0.1 --port 3080 --no-open ` +
       `--trusted-host 127.0.0.1:${port} --trusted-host localhost:${port}`,
   ]);
   return true;
@@ -236,8 +245,9 @@ async function start(): Promise<void> {
     run("docker", ["restart", CONTAINER]);
     await waitReady();
   }
+  const entry = authUrl();
   console.log(`
-[dev] ready: ${baseUrl}
+[dev] ready: ${entry ?? `${baseUrl} (token not printed yet — check docker logs)`}
       edit src/ — changes hot-reload into the open page within ~2s
       Ctrl-C stops only this watcher; the container keeps running
       remove the environment with: mise run dev:stop`);
@@ -252,7 +262,7 @@ async function restart(): Promise<void> {
   }
   run("docker", ["restart", CONTAINER]);
   await waitReady();
-  console.log(`[dev] restarted — ${baseUrl}`);
+  console.log(`[dev] restarted — ${authUrl() ?? baseUrl}`);
 }
 
 function stop(): void {
