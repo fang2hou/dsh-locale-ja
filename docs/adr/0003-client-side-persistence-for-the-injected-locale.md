@@ -1,6 +1,6 @@
 # ADR-0003: Client-side persistence for the injected locale
 
-- Status: Accepted
+- Status: Superseded by [ADR-0006](./0006-adopt-the-public-language-pack-api.md)
 - Date: 2026-08-14
 
 ## Context

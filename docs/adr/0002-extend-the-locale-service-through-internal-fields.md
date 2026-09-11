@@ -1,6 +1,6 @@
 # ADR-0002: Extend the locale service through its internal fields
 
-- Status: Accepted
+- Status: Superseded by [ADR-0006](./0006-adopt-the-public-language-pack-api.md)
 - Date: 2026-08-14
 
 ## Context

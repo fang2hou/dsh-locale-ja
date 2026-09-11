@@ -7,7 +7,7 @@ agents modify the codebase. Keep it short and operational.
 ## What this project is
 
 `@fang2hou/dsh-locale-ja` is a **standard DSH client plugin package** for
-DeepSeek Harness (DSH) `0.1.1-rc.2`, supported on the `web` profile. Its Host
+DeepSeek Harness (DSH) `0.1.5-rc.2`, supported on the `web` profile. Its Host
 half (`src/index.ts`) exports an empty `apply()` only so the package can mount a
 Loader row; its browser half (`src/client/index.ts`) performs locale
 registration and all user-facing work. `dsh plugin --profile web add
@@ -34,30 +34,29 @@ registration and all user-facing work. `dsh plugin --profile web add
    activates.
 
 3. **The plugin must own every side effect and reverse it through `ctx.effect`.**
-   Dictionary registrations, locale overrides, persistence hooks, and the
+   Dictionary registrations, the language-pack registration, and the
    plugin-owned stylesheet must all have disposers that restore shipped
    behavior on stop, update, removal, and partial setup; see
-   [ADR-0002](./docs/adr/0002-extend-the-locale-service-through-internal-fields.md),
-   [ADR-0003](./docs/adr/0003-client-side-persistence-for-the-injected-locale.md),
-   and [ADR-0004](./docs/adr/0004-japanese-fonts-via-the-base-font-token.md).
+   [ADR-0006](./docs/adr/0006-adopt-the-public-language-pack-api.md) and
+   [ADR-0004](./docs/adr/0004-japanese-fonts-via-the-base-font-token.md).
    This prevents a plugin lifecycle change from leaking registrations,
    callbacks, storage state, or DOM mutations.
 
-4. **Only `src/client/locale-extension.ts` may contact locale internals, through
-   `snapshot`/`publish`/`adopt` and a runtime capability check.** The module
-   must fail loudly when the installed runtime no longer exposes that contract
-   and must keep the original methods for teardown; see
+4. **The plugin must extend the locale service only through its public
+   language-pack API.** `src/client/locale-extension.ts` calls
+   `locale.addLanguage({ id: 'ja', label: '日本語', fallback: 'en' })` and
+   returns the runtime's own disposer; selection, persistence, restore, and
+   Host sync are the shipped `setLocale`/`adopt` paths with no wrappers; see
+   [ADR-0006](./docs/adr/0006-adopt-the-public-language-pack-api.md). The
+   retired `0.1.x` internals drive is recorded in
    [ADR-0002](./docs/adr/0002-extend-the-locale-service-through-internal-fields.md).
-   DSH `0.1.1-rc.2` has no public API for adding a selectable locale, so this
-   boundary makes the compatibility risk explicit and contained.
 
-5. **Japanese persistence must remain client-side, and `setLocale('ja')` must
-   never write to the Host settings scope.** `src/client/preference.ts` uses
-   the `dsh-locale-ja:preference` storage key, while shipped-locale selections
-   clear the override and use the shipped path; see
-   [ADR-0003](./docs/adr/0003-client-side-persistence-for-the-injected-locale.md).
-   The Host locale schema accepts only `zh|en`, so writing `ja` would be
-   rejected and could undo the active browser selection.
+5. **Japanese persists through the Host locale scope, not plugin storage.**
+   The Host locale schema accepts any BCP 47 tag since DSH `0.1.5`, so
+   `setLocale('ja')` writes the shipped `locale.preference` field and boots
+   restore Japanese once the language registration lands; the plugin keeps no
+   persistence layer of its own; see
+   [ADR-0006](./docs/adr/0006-adopt-the-public-language-pack-api.md).
 
 6. **The Japanese font override must be locale-scoped and token-level.**
    `src/client/font.ts` must own a style tag that exists only while `ja` is
@@ -69,14 +68,16 @@ registration and all user-facing work. `dsh plugin --profile web add
 
 7. **Dictionaries must use the platform's own compile-time key unions whenever
    they are exposed.** `src/client/dictionaries.ts` must keep local unions only
-   for `directory-browser`
-   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.1-rc.2`),
+   for namespaces whose owning packages do not expose them through their
+   `exports` maps — `directory-browser`
+   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.5-rc.2`),
    `permission.access`
-   (`@deepseek-ai/dsh-client-ui-permission-presets@0.1.1-rc.2`), and
-   `trajectory` (`@deepseek-ai/dsh-client-ui-trajectory@0.1.1-rc.2`), naming
-   each copied source and version; `pnpm typecheck` is the drift check.
-   This makes platform key renames, additions, and removals compile-time
-   failures while keeping the three unavailable unions auditable.
+   (`@deepseek-ai/dsh-client-ui-permission-presets@0.1.5-rc.2`), `trajectory`
+   (`@deepseek-ai/dsh-client-ui-trajectory@0.1.5-rc.2`), and the
+   runtime-only namespaces registered through the untyped overload — naming
+   each copied source and version; `pnpm typecheck` is the drift check for the
+   typed set. This makes platform key renames, additions, and removals
+   compile-time failures while keeping the unavailable unions auditable.
 
 8. **Code identifiers, comments, and configuration must remain English, with
    Japanese confined to dictionary values.** This keeps implementation
@@ -88,28 +89,20 @@ registration and all user-facing work. `dsh plugin --profile web add
 - `src/index.ts` — Host half; exports the empty `apply()` needed for the
   mountable Loader entry and contributes no Host behavior.
 - `src/client/index.ts` — browser assembly point; injects `locale`, registers
-  `DICTS`, installs the locale extension, syncs the font, restores the local
-  preference, and owns the `ctx.effect` lifecycle.
-- `src/client/locale-extension.ts` — the only module touching locale internals;
-  extends the selectable list, wraps `setLocale`/`adopt`, checks capability, and
-  restores the shipped methods and snapshot.
-- `src/client/preference.ts` — reads and writes the plugin's localStorage key,
-  tolerating unavailable storage without moving state into Host settings.
+  `DICTS`, installs the language pack, syncs the font, and owns the
+  `ctx.effect` lifecycle.
+- `src/client/locale-extension.ts` — registers 日本語 through the public
+  `addLanguage` language-pack API and hands back the runtime's disposer.
 - `src/client/font.ts` — creates, synchronizes, and disposes the
   plugin-owned, locale-scoped style tag for `--dsw-font-family`.
-- `src/client/layout.ts` — creates, synchronizes, and disposes the
-  plugin-owned layout stylesheet that widens the shipped StatsLine text budget
-  while `ja` is active; resolves the component's hashed CSS-module class at
-  runtime from its registration tag and degrades to shipped behavior when the
-  stylesheet is absent.
-- `src/client/dictionaries.ts` — defines the 29 Japanese namespace dictionaries
-  and their platform or documented local key unions.
+- `src/client/dictionaries.ts` — defines the 42 Japanese namespace
+  dictionaries and their platform or documented local key unions.
 - `scripts/build.ts` — emits declarations, the Host ESM entry, and the
   browser loader bundle, then enforces its envelope, purity, module-syntax, and
   export gates.
 - `scripts/client.test.ts` — evaluates `lib/client.js` through a fake
   `window.__ModuleLoader__` and stand-in locale service, covering activation,
-  switching, local persistence, fonts, and complete teardown.
+  switching, Host-scope persistence, fonts, and complete teardown.
 - `cordis.patch.yml` — inserts the `locale-ja` Loader row that lets DSH discover
   and serve the package's browser half.
 

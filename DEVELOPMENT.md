@@ -3,7 +3,7 @@
 This document describes how to develop, validate, and release
 `dsh-locale-ja`.
 
-The project is pre-release (`0.2.0`) and supports the DSH `0.1.1-rc.2` `web`
+The project is pre-release (`0.3.0`) and supports the DSH `0.1.5-rc.2` `web`
 profile and browser UI only. The `0.1.0` on npm is the older, dynamically
 loaded artifact; the standard package ships from `0.2.0`.
 
@@ -13,8 +13,8 @@ The project standardizes its environment with [mise](https://mise.jdx.dev/):
 
 | Tool                         | Managed by  | Purpose                                      |
 | ---------------------------- | ----------- | -------------------------------------------- |
-| Node.js 24                   | `mise`      | Runtime / build                              |
-| pnpm 11                      | `mise`      | Package manager (never npm/yarn)             |
+| Node.js LTS (24)             | `mise`      | Runtime / build                              |
+| pnpm 12                      | `mise`      | Package manager (never npm/yarn)             |
 | [cocogitto](https://cocogitto.ai/) (`cog`) | `mise` | Conventional Commits validation             |
 | [prek](https://github.com/j178/prek)       | `mise` | Pre-commit framework                         |
 | gitleaks                     | `mise`      | Secret scanning                              |
@@ -61,8 +61,8 @@ prek install          # install git hooks (uses .pre-commit-config.yaml)
   hook that runs `cog verify`.
 - **Workspace policy** (`pnpm-workspace.yaml`): `allowBuilds` approves
   esbuild's postinstall; `minimumReleaseAge: 60` refuses resolutions
-  published less than an hour ago, with the fast-moving `@deepseek-ai/*`
-  prerelease line excluded.
+  published less than an hour ago, including the fast-moving
+  `@deepseek-ai/*` prerelease line.
 
 ## Common tasks
 
@@ -120,12 +120,15 @@ Japanese copy lives in `src/client/dictionaries.ts`. Each dictionary is typed
 against its namespace's shipped key union, so a renamed, removed, or added DSH
 key is a compile-time error. Preserve placeholders such as `{name}` verbatim.
 
-Twenty-six of the 29 namespaces use unions from the owning package's shipped
-declarations. The three namespaces `directory-browser`, `permission.access`,
-and `trajectory` use documented local copies because their owning packages do
+Thirty-three of the 42 namespaces use unions from the owning package's shipped
+declarations. The other nine — `directory-browser`, `permission.access`,
+`trajectory`, and the runtime-only namespaces (`documentHtml`,
+`documentMarkdown`, `reference`, `sidebarCodePreview`, `sidebarImage`,
+`sidebarPdf`) — use documented local copies because their owning packages do
 not expose those unions through their `exports` maps; `pnpm typecheck` cannot
-see drift in those three, but the upstream drift check below can — it reads
-the key contracts (including those three) straight out of any DSH release.
+see drift in those nine, but the upstream drift check below can — it reads
+the key contracts straight out of any DSH release (typed declarations plus
+the shipped bundles' `locale.register` call sites).
 
 After editing a dictionary, run:
 
@@ -141,13 +144,17 @@ at the pinned devDependency versions.
 
 `mise run e2e` (`e2e/run-e2e.ts`):
 1. builds the plugin tarball from the current source (`pnpm pack`),
-2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.1-rc.2`
+2. builds a Docker image pinning `@deepseek-ai/dsh@0.1.5-rc.2`
    (`e2e/Dockerfile`),
-3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`,
-4. drives the real UI with Playwright from the host in three phases —
-   baseline (no plugin), installed (日本語 selectable, applies, persists,
-   reverses; a mock-LLM conversation turn renders the Japanese reply and the
-   stats row), removed (back to English, menu back to 中文/English),
+3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`
+   (booting with `--no-open`; readiness is any HTTP response, since the
+   `/api` browser-trust fence answers tokenless requests with 401/303),
+4. extracts the per-boot process token from the container logs
+   (`harness.authUrl`) and drives the real UI with Playwright from the host
+   through the authenticated entry URL, in four phases — baseline (no
+   plugin), installed (日本語 selectable, applies, persists, reverses), a
+   mock-LLM conversation turn rendering the Japanese reply chrome, and
+   removed (back to English, menu back to 中文/English),
 5. installs/removes the plugin between phases via
    `dsh plugin --profile web add/remove` inside the container, and
    tears everything down.
@@ -167,7 +174,7 @@ The DSH under test defaults to the pinned version above; override it with
 
 ```bash
 mise run e2e-next                   # next @deepseek-ai/dsh
-DSH_E2E_DSH_VERSION=0.1.1-rc.2 mise run e2e   # an exact upcoming version
+DSH_E2E_DSH_VERSION=0.1.5-rc.2 mise run e2e   # an exact upcoming version
 ```
 
 ## Local dev environment (Docker + hot reload)

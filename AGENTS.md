@@ -3,7 +3,7 @@
 ## Project aim
 
 `@fang2hou/dsh-locale-ja` is a **standard DSH client plugin package** for
-DeepSeek Harness (DSH) `0.1.1-rc.2`. It supports the `web` profile and browser
+DeepSeek Harness (DSH) `0.1.5-rc.2`. It supports the `web` profile and browser
 UI only. Keep the standard package shape:
 
 - `src/index.ts` is the Host half and exports an empty `apply()` so
@@ -22,7 +22,7 @@ Read [ARCHITECTURE.md](./ARCHITECTURE.md) and the relevant
 
 ## DSH references and contract sources
 
-DSH iterates fast (developer preview). This plugin pins `0.1.1-rc.2`; when
+DSH iterates fast (developer preview). This plugin pins `0.1.5-rc.2`; when
 bumping, re-verify against the real runtime first. When developing outside a
 DSH session, rebuild context from these sources instead of guessing:
 
@@ -80,9 +80,9 @@ Local ground truth (always prefer over memory or naming guesses):
 
 ## Codebase-specific rules
 
-- `src/client/locale-extension.ts` is the only module allowed to contact
-  locale internals (`snapshot`, `publish`, and `adopt`). Keep its runtime
-  capability check and its disposer in place when touching that code.
+- `src/client/locale-extension.ts` is the only module that talks to the locale
+  service's language-pack surface. Keep it on the public `addLanguage` API and
+  keep its disposer in place when touching that code.
 - Dictionary edits in `src/client/dictionaries.ts` must preserve every
   placeholder verbatim, such as `{name}`, and must pass `pnpm typecheck`.
   That typecheck is also the compile-time dictionary-drift check after a DSH
@@ -94,8 +94,8 @@ Local ground truth (always prefer over memory or naming guesses):
 - The build gates in `scripts/build.ts` are load-bearing: preserve the
   module-loader envelope, zero-`require` check, module-syntax check, and
   `apply`/`inject` export checks.
-- Keep Japanese persistence in the plugin's `dsh-locale-ja:preference`
-  storage key, never in the Host `locale` settings scope, and keep the
+- Japanese persists through the Host `locale.preference` settings field (the
+  public language-pack path); the plugin owns no persistence storage. Keep the
   Japanese font in the plugin-owned style tag only.
 
 ## Development strategy
