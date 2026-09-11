@@ -1,11 +1,6 @@
-/**
- * Integration test for the built browser bundle (`lib/client.js`): evaluates
- * it the way the shell does — through `window.__ModuleLoader__.load` — and
- * drives it against a stand-in locale service mirroring the shipped
- * `LocaleRuntime` semantics. Covers the loader envelope, the zero-`require`
- * purity, and the runtime behavior of the locale extension including full
- * teardown; `mise run test` builds first.
- */
+// Integration test for the built browser bundle (`lib/client.js`): evaluates
+// it through `window.__ModuleLoader__.load` the way the shell does, against
+// a stand-in locale service mirroring the shipped `LocaleRuntime`.
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -16,17 +11,12 @@ const { name: PACKAGE_ID } = JSON.parse(readFileSync(resolve(root, "package.json
 };
 const bundle = readFileSync(resolve(root, "lib/client.js"), "utf8");
 
-/** Namespaces the plugin must register Japanese dictionaries for. */
 const NAMESPACE_COUNT = 42;
 
 let failures = 0;
 
-/**
- * Assert a condition, recording a failure instead of throwing so one broken
- * expectation still reports the rest.
- * @param condition - the expectation.
- * @param message - what was expected.
- */
+// Records failures instead of throwing so one broken expectation still
+// reports the rest.
 function assert(condition: boolean, message: string): void {
   if (condition) console.log(`  ✓ ${message}`);
   else {
@@ -37,46 +27,37 @@ function assert(condition: boolean, message: string): void {
 
 // --- browser stubs --------------------------------------------------------
 
-/** One style tag the stubbed `document` hands out. */
 interface StyleTagStub {
   dataset: Record<string, string>;
   textContent: string;
   remove(): void;
 }
 
-/** The `document` surface the bundle touches. */
 interface DocumentStub {
   createElement(): StyleTagStub;
   head: { append(tag: StyleTagStub): void };
 }
 
-/** The `window` surface the loader envelope touches. */
 interface WindowStub {
   __ModuleLoader__: { load(entry: LoaderEntry): void };
 }
 
-/** The contract the browser bundle must export. */
 interface ClientPlugin {
   inject: readonly string[];
   apply: (ctx: unknown) => void;
 }
 
-/** One module registered through the loader envelope. */
 interface LoaderEntry {
   id: string;
   factory: (require: (specifier: string) => unknown) => ClientPlugin;
 }
 
-/** The `ctx` surface the bundle's `apply` touches. */
 interface ContextStub {
   locale: LocaleStandIn;
   effect(fn: () => () => void, description?: string): void;
 }
 
-/**
- * Minimal `document` covering the plugin's stylesheet ownership.
- * @returns the stub plus the live list of appended style tags.
- */
+// Minimal `document` covering the plugin's stylesheet ownership.
 function createDocument(): {
   tags: StyleTagStub[];
   document: DocumentStub;
@@ -105,47 +86,40 @@ function createDocument(): {
 
 // --- locale service stand-in ---------------------------------------------
 
-/** One entry of the selectable locale list. */
 interface LocaleEntry {
   id: string;
   label: string;
 }
 
-/** The immutable snapshot the locale service hands the UI. */
 interface Snapshot {
   active: string;
   locales: readonly LocaleEntry[];
   revision: number;
 }
 
-/** One dictionary registration recorded by the stand-in. */
 interface Registration {
   ns: string;
   id: string;
   dict: unknown;
 }
 
-/** One write the stand-in forwarded to the Host scope. */
 interface HostWrite {
   field: string;
   value: string;
 }
 
-/** The Host settings scope the service syncs with. */
 interface HostScope {
   preference: string;
   set(field: string, value: string): void;
   getSnapshot(): { value?: { preference?: string } };
 }
 
-/** A language-pack registration accepted by `addLanguage`. */
 interface LanguageRegistration {
   id: string;
   label: string;
   fallback: string;
 }
 
-/** The recorded, drivable stand-in for the shipped `LocaleRuntime`. */
 interface LocaleStandIn {
   registrations: Registration[];
   hostWrites: HostWrite[];
@@ -163,14 +137,9 @@ interface LocaleStandIn {
   publish(active: string, localeChanged: boolean, locales?: readonly LocaleEntry[]): void;
 }
 
-/**
- * A stand-in for the shipped `LocaleRuntime`, reproducing the 0.1.5 behavior
- * the plugin depends on: a frozen snapshot, `publish` as the only mutation
- * path, `addLanguage` extending the catalog and re-resolving a stored
- * `ja` preference, `setLocale` rejecting unregistered ids and writing through
- * to the Host scope, and `adopt` following the Host scope.
- * @returns the service plus the recorded interactions.
- */
+// Mirrors the 0.1.5 `LocaleRuntime` contract the plugin depends on: frozen
+// snapshots, `addLanguage` re-resolving a stored `ja` preference,
+// `setLocale` writing through to the Host scope, `adopt` following it.
 function createLocale(initialHostPreference = "en"): LocaleStandIn {
   const registrations: Registration[] = [];
   const hostWrites: HostWrite[] = [];

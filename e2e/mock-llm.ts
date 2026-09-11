@@ -11,7 +11,7 @@ import http from "node:http";
 import { setTimeout as sleep } from "node:timers/promises";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-/** Deterministic usage so the stats row renders every segment, cache included. */
+/** Deterministic usage so the stats dialog renders every segment, cache included. */
 const USAGE = {
   prompt_tokens: 1234,
   completion_tokens: 180,
@@ -26,7 +26,7 @@ const CONTENT = [
   "統計行（ターン数・所要時間・トークン数）の表示確認が目的です。",
 ];
 
-/** Frame delay so LLM/tool durations and TTFT in the stats row are non-zero. */
+/** Frame delay so LLM/tool durations and TTFT in the stats dialog are non-zero. */
 const FRAME_DELAY_MS = 60;
 
 type ChatRequest = {
@@ -35,13 +35,8 @@ type ChatRequest = {
   thinking?: { type?: string };
 };
 
-/**
- * Start the mock server.
- * @param port - port to listen on (loopback + LAN interfaces, so containers
- * reach it through host.docker.internal).
- * @param log - optional line logger.
- * @returns the server; `close()` stops it.
- */
+// Listens on loopback + LAN interfaces so containers reach it through
+// host.docker.internal.
 export function startMockLlm(port: number, log: (line: string) => void = console.log) {
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/health") {
@@ -116,18 +111,10 @@ const isAlive = async (port: number): Promise<boolean> => {
   }
 };
 
-/**
- * Ensure a mock server is serving on `port`, in its OWN process.
- *
- * The orchestrators (`e2e/run-e2e.ts`, `scripts/dev-env.ts`) spend most of
- * their life inside blocking `spawnSync` calls (docker, pnpm, playwright);
- * an in-process server would starve behind those and dead-lock any
- * container-side fetch that arrives mid-call (connect, then no response
- * headers until the call ends). A detached child keeps serving regardless.
- * @param port - port to listen on.
- * @returns the child process when one was started, or null when a server
- * already answers on the port (reused, not owned — do not kill it).
- */
+// The server lives in its OWN process: the orchestrators spend most of their
+// life inside blocking spawnSync calls, and an in-process server would starve
+// behind those, dead-locking container-side fetches. A returned null means a
+// server already answered on the port — reused, not owned; do not kill it.
 export async function ensureMockLlm(port: number): Promise<ChildProcess | null> {
   if (await isAlive(port)) {
     console.log(`[mock-llm] reusing the server on port ${port}`);

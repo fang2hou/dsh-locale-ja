@@ -1,15 +1,13 @@
 /**
- * Upstream dictionary drift check: compares the plugin's Japanese
- * dictionaries against the locale key contracts a DSH release actually
- * ships, failing on missing keys (silent fallback), stale keys, uncovered
- * namespaces, and removed namespaces. `pnpm typecheck` covers the pinned
- * devDependencies, but three namespaces borrow no key union from the
- * platform and nothing watches newer previews — this closes both gaps by
- * installing a full DSH web tree into a throwaway directory and reading the
- * key contracts out of it with the TypeScript compiler.
+ * Compares the plugin's Japanese dictionaries against the locale key
+ * contracts a DSH release actually ships — missing keys, stale keys,
+ * uncovered namespaces, removed namespaces. `pnpm typecheck` only covers
+ * the pinned devDependencies and the namespaces that borrow no key union;
+ * this closes both gaps by installing a full DSH web tree into a throwaway
+ * directory and reading the key contracts out of it.
  *
- * Usage: `node scripts/check-dict-drift.ts [--dsh <version|latest>]`
- * (default `latest`; exit code 1 on any drift or extraction failure).
+ * Usage: `node scripts/check-dict-drift.ts [--dsh <version|next|latest>]`
+ * (default `next`).
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -23,28 +21,17 @@ import { resolveDshVersion } from "./dsh-version.ts";
 /** The web profile composition — its dependency tree is the package set `dsh web` mounts. */
 const WEB_APP_PACKAGE = "@deepseek-ai/dsh-web-app";
 
-/**
- * The package that owns the `LocaleNamespaceMap` interface every client
- * package augments. Since the 0.1.0-rc.8 wave it ships only as a
- * devDependency of those packages, so a web-tree install no longer includes
- * it — install it alongside the tree or the probe import cannot resolve.
- */
+// Ships only as a devDependency of the client packages since 0.1.0-rc.8, so a
+// web-tree install no longer includes it — install it alongside or the probe
+// import cannot resolve.
 const NAMESPACE_MAP_PACKAGE = "@deepseek-ai/dsh-client-ui-slots";
 
-/**
- * A declaration file whose namespace merge is not reachable through the
- * package `exports` map (`./client` re-exports nothing of it). Upstream
- * internals: if the path moves, this check fails loudly (module resolution
- * error) — the intended signal to re-derive the extraction points.
- */
+// Upstream internals on purpose: when the path moves, the module resolution
+// error is the signal to re-derive the extraction points.
 const MERGE_DECLARATION = "@deepseek-ai/dsh-client-ui-trajectory/lib/types/client/locales.d.ts";
 
-/**
- * Namespaces registered through the untyped `register(ns, locale, dict)`
- * overload whose key union still exists in an internal declaration file.
- * The declaration path and type name are upstream internals with the same
- * loud-failure contract as {@link MERGE_DECLARATION}.
- */
+// Key unions reachable only through internal declarations; same loud-failure
+// contract as MERGE_DECLARATION.
 const UNTYPED_TYPE_NAMESPACES: Record<string, { declaration: string; typeName: string }> = {
   "permission.access": {
     declaration: "@deepseek-ai/dsh-client-ui-permission-presets/lib/types/client/locales.d.ts",
@@ -52,14 +39,9 @@ const UNTYPED_TYPE_NAMESPACES: Record<string, { declaration: string; typeName: s
   },
 };
 
-/**
- * Namespaces whose keys exist only as dictionary literals inside the shipped
- * client bundle (no type anywhere). Keys are read from the bundle's
- * `locale.register(ns, …)` call sites — quoted string literals survive
- * minification — so an unregistered namespace or a bundle shape change
- * yields zero keys and fails loudly, which is exactly the drift signal
- * wanted here.
- */
+// Namespaces that exist only as dictionary literals in the shipped bundle;
+// keys are read from their `locale.register(ns, …)` call sites, and a bundle
+// shape change yields zero keys and fails loudly.
 const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string }[] = [
   {
     ns: "directory-browser",
@@ -91,7 +73,6 @@ const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string }[] = [
   },
 ];
 
-/** Parse `--dsh <version|next|latest>` (default `next`). */
 function parseArgs(argv: string[]): string {
   const flag = argv.indexOf("--dsh");
   if (flag !== -1 && argv[flag + 1]) return argv[flag + 1]!;
@@ -100,7 +81,6 @@ function parseArgs(argv: string[]): string {
   return "next";
 }
 
-/** Install the DSH web tree for `version` into `dir`; throws with npm's output on failure. */
 function installWebTree(dir: string, version: string): void {
   console.log(`[drift] installing ${WEB_APP_PACKAGE}@${version} into ${dir}`);
   const result = spawnSync(
@@ -125,7 +105,6 @@ function installWebTree(dir: string, version: string): void {
   }
 }
 
-/** Installed @deepseek-ai packages that expose a `./client` types entry. */
 function clientTypedPackages(root: string): string[] {
   const scopeDir = path.join(root, "node_modules", "@deepseek-ai");
   return fs
@@ -141,11 +120,8 @@ function clientTypedPackages(root: string): string[] {
     .toSorted();
 }
 
-/**
- * Type-check a generated probe file under the temp install and hand back its
- * checker plus source file. Probe semantics mirror the repo tsconfig (bundler
- * resolution, skipLibCheck) so package `exports` maps are honored.
- */
+// Probe semantics mirror the repo tsconfig (bundler resolution, skipLibCheck)
+// so package `exports` maps are honored.
 function createProbeProgram(
   root: string,
   lines: string[],
@@ -179,11 +155,8 @@ function createProbeProgram(
   return { checker: program.getTypeChecker(), source };
 }
 
-/**
- * Evaluate a type alias declared in the probe into its string-literal union
- * members. Throws when the alias is not a pure string-literal union — an
- * opaque key contract that cannot be checked statically and needs a human.
- */
+// Throws when the alias is not a pure string-literal union: an opaque key
+// contract that cannot be checked statically and needs a human.
 function literalUnionOf(
   checker: ts.TypeChecker,
   source: ts.SourceFile,
@@ -213,7 +186,6 @@ function literalUnionOf(
   return literals.toSorted();
 }
 
-/** All locale namespaces the installed tree merges into `LocaleNamespaceMap`. */
 function mergedNamespaces(root: string, packages: string[]): string[] {
   const { checker, source } = createProbeProgram(root, [
     ...packages.map((pkg) => `import type {} from "${pkg}/client";`),
@@ -224,7 +196,6 @@ function mergedNamespaces(root: string, packages: string[]): string[] {
   return literalUnionOf(checker, source, "AllNamespaces");
 }
 
-/** Key unions for every merged namespace, read from the map's members. */
 function mergedNamespaceKeys(
   root: string,
   packages: string[],
@@ -245,7 +216,6 @@ function mergedNamespaceKeys(
   return keys;
 }
 
-/** Key unions for namespaces whose unions live in internal declarations. */
 function untypedTypeKeys(root: string): Map<string, string[]> {
   const entries = Object.entries(UNTYPED_TYPE_NAMESPACES);
   const lines: string[] = [];
@@ -263,7 +233,6 @@ function untypedTypeKeys(root: string): Map<string, string[]> {
   return keys;
 }
 
-/** Keys of namespaces that register dictionaries only at runtime, scanned from bundles. */
 function runtimeScannedKeys(root: string): Map<string, string[]> {
   const keys = new Map<string, string[]>();
   for (const { ns, pkg } of RUNTIME_SCANNED_NAMESPACES) {
@@ -363,7 +332,6 @@ function registerCallKeys(text: string, ns: string): string[] {
   return [...keys];
 }
 
-/** Read the balanced `{…}` / `(…)` / `[…]` literal starting at `start`. */
 function balancedLiteral(text: string, start: number, bracketsOnly: boolean): string | null {
   let depth = 0;
   let inString = false;
@@ -392,7 +360,6 @@ function balancedLiteral(text: string, start: number, bracketsOnly: boolean): st
   return null;
 }
 
-/** Split an argument list on top-level commas, preserving nested literals. */
 function splitArguments(argumentText: string): string[] {
   const parts: string[] = [];
   let depth = 0;
@@ -424,7 +391,6 @@ function splitArguments(argumentText: string): string[] {
   return parts;
 }
 
-/** Compare upstream key sets against the plugin's dictionaries; returns failure lines. */
 function diff(
   plugin: Record<string, Record<string, string>>,
   upstream: Map<string, string[]>,

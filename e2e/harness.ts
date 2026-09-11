@@ -1,6 +1,5 @@
-// Docker lifecycle helpers for the DSH web E2E suite. The default DSH version
-// pin mirrors the plugin's peerDependencies — bump both together; override
-// with DSH_E2E_DSH_VERSION to test an upcoming or newer DSH.
+// Docker lifecycle for the DSH web E2E suite. DEFAULT_DSH_VERSION mirrors
+// the plugin's peerDependencies — bump both together.
 import { execFileSync, spawnSync } from "node:child_process";
 import type { ExecFileSyncOptions } from "node:child_process";
 import net from "node:net";
@@ -10,8 +9,7 @@ export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
 export const DEFAULT_DSH_VERSION = "0.1.5-rc.2";
 
-// First boot initializes the profile and installs its whole dependency tree
-// inside the container, so readiness takes minutes on slower runners.
+// First boot installs the whole profile dependency tree in-container.
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 300_000);
 
 function run(cmd: string, args: string[], opts: ExecFileSyncOptions = {}): void {
@@ -51,12 +49,9 @@ export function startContainer(port: number, version: string, mockLlmUrl?: strin
   // Idempotent: clear any leftover container from a previous aborted run.
   spawnSync("docker", ["rm", "-f", CONTAINER], { stdio: "ignore" });
   // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
-  // cannot reach; socat relays the loopback server to 0.0.0.0:3081. The
-  // browser-facing authority is 127.0.0.1:<port>, so that is what the
-  // /api browser-trust fence must trust. `--no-open` keeps headless runs
-  // from spawning a browser that does not exist. host-gateway lets the
-  // container reach a host-side mock LLM (e2e/mock-llm.ts) on every docker
-  // flavor.
+  // cannot reach; socat relays the loopback server to 0.0.0.0:3081, and the
+  // browser-facing authority is what the /api fence must trust. host-gateway
+  // reaches the host-side mock LLM (e2e/mock-llm.ts) on every docker flavor.
   const args = [
     "run",
     "-d",
@@ -82,10 +77,8 @@ export function startContainer(port: number, version: string, mockLlmUrl?: strin
 
 export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): Promise<void> {
   const deadline = Date.now() + timeoutMs;
-  // First boot auto-initializes the profile and runs pnpm install inside the
-  // container, so allow minutes. The browser-trust fence answers tokenless
-  // requests with 401/303 — any HTTP response means the server is up.
-  // Sequential polling by design.
+  // The browser-trust fence answers tokenless requests with 401/303 — any
+  // HTTP response means the server is up. Sequential polling by design.
   while (Date.now() < deadline) {
     try {
       const res = await fetch(baseUrl, { redirect: "manual" });
@@ -102,12 +95,9 @@ export async function waitReady(baseUrl: string, timeoutMs = BOOT_TIMEOUT_MS): P
   throw new Error(`DSH web not ready at ${baseUrl} after ${timeoutMs} ms`);
 }
 
-/**
- * The authenticated entry URL for the running server: since DSH 0.1.5 the
- * /api browser-trust fence rejects tokenless requests, so a fresh browser
- * context must first visit the process-token URL the server prints on boot.
- * Each boot prints a fresh token, so take the last one in the logs.
- */
+// The /api browser-trust fence rejects tokenless requests, so every fresh
+// browser context enters through the per-boot process-token URL. Each boot
+// prints a fresh token — take the last one in the logs.
 export async function authUrl(baseUrl: string): Promise<string> {
   const deadline = Date.now() + 30_000;
   while (Date.now() < deadline) {

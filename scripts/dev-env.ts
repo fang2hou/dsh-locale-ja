@@ -1,16 +1,10 @@
-/**
- * Persistent local DSH web environment for developing this plugin: the
- * container bind-mounts the repository read-only and installs it through
- * pnpm's `link:` protocol, so the served plugin IS the host's built output.
- * The watcher rebuilds on source changes and DSH's own HMR
- * (`dsh-client-hmr`) hot-swaps the rebuilt bundle into the open page — no
- * reload, plugin disposers included. `cordis.patch.yml`/`package.json`
- * changes restart DSH automatically.
- *
- * Subcommands (exposed as mise tasks): start, stop, restart, status, logs.
- * Environment: DSH_DEV_PORT (default 13080), DSH_DEV_DSH_VERSION (exact
- * version or `latest`; default the pinned peerDependency version).
- */
+// Persistent local DSH web for developing this plugin: the container
+// bind-mounts the repository read-only and installs it through pnpm's
+// `link:` protocol, so the served plugin IS the host's built output; the
+// watcher rebuilds on change and DSH's HMR hot-swaps the bundle into the
+// open page. Subcommands (mise tasks): start, stop, restart, status, logs.
+// Env: DSH_DEV_PORT (13080), DSH_DEV_DSH_VERSION (default the pinned peer
+// version), DSH_DEV_MOCK_LLM_PORT (13090).
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -19,33 +13,25 @@ import { ensureMockLlm } from "../e2e/mock-llm.ts";
 import { buildImage, DEFAULT_DSH_VERSION, IMAGE } from "../e2e/harness.ts";
 import { resolveDshVersion } from "./dsh-version.ts";
 
-/** Stable container name so the environment survives between commands. */
 const CONTAINER = "dsh-locale-ja-dev";
-/** Default host port; the e2e suite picks dynamic ones, this one is fixed. */
 const DEFAULT_PORT = 13080;
-/** Where the repository is bind-mounted inside the container (read-only). */
 const PLUGIN_MOUNT = "/srv/plugin";
-/** Profile node_modules inside the container (DSH_HOME is /data/dsh). */
 const PROFILE_MODULES = "/data/dsh/profiles/web/node_modules";
-/** First boot initializes the profile and runs pnpm install inside. */
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_DEV_BOOT_TIMEOUT_MS ?? 180_000);
-/** Host port for the bundled DeepSeek-compatible mock LLM (see e2e/mock-llm.ts). */
 const MOCK_LLM_PORT = Number(process.env.DSH_DEV_MOCK_LLM_PORT ?? 13090);
-/** How the container's dsh-llm-deepseek adapter reaches the host-side mock. */
 const DEEPSEEK_BASE_URL = `http://host.docker.internal:${MOCK_LLM_PORT}`;
 const DEBOUNCE_MS = 400;
 
 const root = path.resolve(import.meta.dirname, "..");
 const port = Number(process.env.DSH_DEV_PORT ?? DEFAULT_PORT);
 const baseUrl = `http://127.0.0.1:${port}`;
-/** Root-level files the watcher reacts to (src/** is always watched). */
 const WATCHED_ROOT_FILES: Record<string, true> = {
   "cordis.patch.yml": true,
   "package.json": true,
   "tsconfig.json": true,
   "tsconfig.tools.json": true,
 };
-/** Loader-level files: DSH reads them only at boot, so restart after a build. */
+// DSH reads these only at boot, so a build needs a restart to take effect.
 const STRUCTURAL_FILES: Record<string, true> = {
   "cordis.patch.yml": true,
   "package.json": true,
@@ -59,7 +45,6 @@ function ok(cmd: string, args: string[]): boolean {
   return spawnSync(cmd, args, { stdio: "ignore" }).status === 0;
 }
 
-/** A docker inspect format string for this container, or null if absent. */
 function inspect(format: string): string | null {
   const result = spawnSync("docker", ["inspect", "-f", format, CONTAINER], {
     encoding: "utf8",
@@ -86,17 +71,13 @@ async function waitReady(): Promise<void> {
   process.exit(1);
 }
 
-/** The authenticated entry URL: the fence requires the per-boot process token. */
 function authUrl(): string | null {
   const result = spawnSync("docker", ["logs", CONTAINER], { encoding: "utf8" });
   const token = /token=([A-Za-z0-9_-]+)/.exec(result.stdout ?? "")?.[1];
   return token === undefined ? null : `${baseUrl}/?token=${token}`;
 }
 
-/**
- * Make sure the container exists, runs, and mounts this repository.
- * @returns true when the container was created and needs a first install.
- */
+// Returns true when the container was created and needs a first install.
 function ensureContainer(version: string): boolean {
   const expected = `${IMAGE}:dsh-${version}`;
   const state = inspect("{{.State.Status}}");
@@ -119,11 +100,9 @@ function ensureContainer(version: string): boolean {
     }
   }
   console.log("[dev] creating the container");
-  // dsh refuses to bind anything but 127.0.0.1, which docker port publishing
-  // cannot reach; socat relays the loopback server to 0.0.0.0:3081. The
-  // browser-facing authority is the host side of the mapping, so that is what
-  // the /api browser-trust fence must trust. The DeepSeek env pair routes the
-  // bundled mock LLM so conversations complete without a real API key.
+  // socat relays dsh's loopback-only bind to a publishable interface; the
+  // DeepSeek env pair routes the bundled mock LLM so conversations complete
+  // without a real API key. See e2e/harness.ts for the fence details.
   run("docker", [
     "run",
     "-d",
@@ -147,7 +126,6 @@ function ensureContainer(version: string): boolean {
   return true;
 }
 
-/** Whether the profile still resolves the plugin to the mounted repository. */
 function pluginLinked(): boolean {
   return ok("docker", [
     "exec",
@@ -173,7 +151,6 @@ function linkPlugin(): void {
   ]);
 }
 
-/** Rebuild on source changes and let DSH's HMR swap the result into the page. */
 function watch(): void {
   let pending = new Set<string>();
   let building = false;

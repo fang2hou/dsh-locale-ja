@@ -14,17 +14,13 @@ import { authUrl, installPlugin, removePlugin, restartAndWait } from "./harness.
 const BASE = process.env.DSH_BASE_URL ?? "http://127.0.0.1:3080";
 const FONT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-font.css"]';
 
-/** Open the app through the token fence; safe on every fresh context. */
 async function openApp(page: Page): Promise<void> {
   await page.goto(await authUrl(BASE), { waitUntil: "load" });
 }
 
-/**
- * Onboarding dialogs block the whole UI, follow the active locale, and mount
- * sequentially — possibly seconds after the shell becomes idle. Wait for a
- * dialog to appear, dismiss it, and repeat until none appears within a
- * settle window.
- */
+// Onboarding dialogs block the whole UI and mount sequentially, possibly
+// seconds after the shell — wait for one, dismiss it, repeat until none
+// appears within the settle timeout.
 async function dismissOnboarding(page: Page): Promise<void> {
   const anyDialog = page.getByRole("dialog").first();
   const proceed = page
@@ -45,19 +41,17 @@ async function dismissOnboarding(page: Page): Promise<void> {
   throw new Error("onboarding dialogs never settled");
 }
 
-/** Settings lives behind the gear button (aria-label follows the locale). */
 async function openSettings(page: Page, triggerLabel: string): Promise<void> {
   await page.getByRole("button", { name: triggerLabel, exact: true }).click();
   await page.getByRole("dialog").waitFor();
 }
 
-/** Open the language menu from the pill button showing `activeLabel`. */
 async function openLanguageMenu(page: Page, activeLabel: string): Promise<void> {
   await page.getByRole("button", { name: activeLabel, exact: true }).click();
   await page.getByRole("menu").waitFor();
 }
 
-/** Sorted language menu entries; the menu renders in a page-level portal. */
+// The menu renders in a page-level portal, so query at page level.
 async function menuItems(page: Page): Promise<string[]> {
   const items = await page.getByRole("menuitem").allInnerTexts();
   return items.map((t) => t.trim()).toSorted();
@@ -93,24 +87,21 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     await dismissOnboarding(page);
     await openSettings(page, "Settings");
 
-    // 1. 日本語 appears in the menu alongside the shipped languages.
     await openLanguageMenu(page, "English");
     expect(await menuItems(page)).toEqual(["English", "中文", "日本語"]);
 
-    // 2. Selecting it flips the UI to Japanese.
     await page.getByRole("menuitem", { name: "日本語" }).click();
     await expect(page.getByText("言語", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "日本語", exact: true })).toBeVisible();
 
-    // 3. Font override active.
     await expect(page.locator(FONT_TAG)).toHaveCount(1);
     const fontFamily = await page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--dsw-font-family"),
     );
     expect(fontFamily).toContain('"Hiragino Sans"');
 
-    // 4. Persistence through the Host locale scope: reload and a second page
-    //    in the same context both come back in Japanese.
+    // Persistence through the Host locale scope: reload and a second page in
+    // the same context both come back in Japanese.
     await page.reload();
     await dismissOnboarding(page);
     await openSettings(page, "設定");
@@ -124,7 +115,7 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     await openSettings(second, "設定");
     await expect(second.getByText("言語", { exact: true })).toBeVisible();
 
-    // 5. Deactivate within the installed plugin: back to English, no font tag.
+    // Deactivate: back to English, no font tag.
     await openLanguageMenu(page, "日本語");
     await page.getByRole("menuitem", { name: "English" }).click();
     await expect(page.getByText("Language", { exact: true })).toBeVisible();
@@ -149,7 +140,6 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
     await page.keyboard.press("Escape");
     await page.getByRole("dialog").waitFor({ state: "hidden" });
 
-    // Start a workspace session through the composer's directory picker.
     await page.getByRole("button", { name: "ワークスペースを選択" }).click();
     const picker = page.getByRole("dialog");
     await picker.waitFor();

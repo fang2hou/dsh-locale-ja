@@ -1,10 +1,7 @@
 /**
  * Japanese dictionaries for every locale namespace DSH registers, typed
- * against each namespace's shipped key union: a key the platform dropped,
- * renamed, or added is a compile error rather than a silent fallback, so
- * `pnpm typecheck` after a DSH upgrade is the dictionary drift check.
- * Placeholders (`{name}`) are preserved verbatim; translation conventions
- * live in DEVELOPMENT.md -> Editing the dictionaries.
+ * against each namespace's shipped key union — key drift is a compile
+ * error. Placeholders ({name}) are preserved verbatim.
  */
 import type { LocaleDictOf } from "@deepseek-ai/dsh-client-ui-slots";
 // common, settings.locale
@@ -73,18 +70,10 @@ import type {} from "@deepseek-ai/dsh-client-ui-workspace/client";
 import type {} from "@deepseek-ai/dsh-session-log-export/client";
 import type {} from "@deepseek-ai/dsh-client-ui-trajectory/client";
 
-/*
- * These namespaces cannot borrow their key union from the platform, so each is
- * checked against a local copy of the shipped key set instead. `pnpm typecheck`
- * cannot detect upstream drift for these; `pnpm drift` scans the shipped
- * bundles and fails loudly instead. The comment on each names the exact
- * package and version the copy was taken from.
- */
-/**
- * `trajectory` keys, from
- * `@deepseek-ai/dsh-client-ui-trajectory@0.1.5-rc.2`, whose key union
- * lives in an internal declaration not reachable through `exports`.
- */
+// The namespaces below ship no key union through their `exports`; each key
+// set is copied from the named package, and `pnpm drift` is the only check
+// that sees their upstream drift.
+/** Keys of @deepseek-ai/dsh-client-ui-trajectory@0.1.5-rc.2 (union lives in a declaration the package's `exports` never exposes). */
 type TrajectoryKey =
   | "view.trajectory"
   | "toolbar.aria"
@@ -262,11 +251,7 @@ type TrajectoryKey =
   | "layout.systemPromptAndToolsUpdated"
   | "layout.compactionInterrupted";
 
-/**
- * `directory-browser` keys, from
- * `@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.5-rc.2`, which
- * registers through the untyped overload and merges no namespace at all.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.5-rc.2 (registers through the untyped overload, no namespace merge). */
 type DirectoryBrowserKey =
   | "browser.title"
   | "browser.home"
@@ -282,11 +267,7 @@ type DirectoryBrowserKey =
   | "browser.truncated"
   | "browser.showHidden";
 
-/**
- * `permission.access` keys, from
- * `@deepseek-ai/dsh-client-ui-permission-presets@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-permission-presets@0.1.5-rc.2 (registers through the untyped overload). */
 type PermissionAccessKey =
   | "preset.readOnly"
   | "preset.workspaceWrite"
@@ -297,25 +278,13 @@ type PermissionAccessKey =
   | "confirm.cancel"
   | "confirm.enable";
 
-/**
- * `documentHtml` keys, from
- * `@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2 (registers through the untyped overload). */
 type DocumentHtmlKey = "title" | "frame" | "loading" | "failed";
 
-/**
- * `documentMarkdown` keys, from
- * `@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2 (registers through the untyped overload). */
 type DocumentMarkdownKey = "viewer.label" | "code.copy" | "code.copied" | "footnotes";
 
-/**
- * `reference` keys, from
- * `@deepseek-ai/dsh-client-ui-reference@0.1.5-rc.2`, which registers
- * through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-reference@0.1.5-rc.2 (registers through the untyped overload). */
 type ReferenceKey =
   | "section.files"
   | "section.sessions"
@@ -328,25 +297,13 @@ type ReferenceKey =
   | "time.months"
   | "time.years";
 
-/**
- * `sidebarCodePreview` keys, from
- * `@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2 (registers through the untyped overload). */
 type SidebarCodePreviewKey = "title" | "copy" | "copied";
 
-/**
- * `sidebarImage` keys, from
- * `@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2 (registers through the untyped overload). */
 type SidebarImageKey = "title" | "preview" | "loading" | "failed" | "unsupported";
 
-/**
- * `sidebarPdf` keys, from
- * `@deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2`, which
- * registers through the untyped overload.
- */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.1.5-rc.2 (registers through the untyped overload). */
 type SidebarPdfKey =
   | "title"
   | "pageImage"

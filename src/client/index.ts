@@ -1,9 +1,3 @@
-/**
- * Browser half of the plugin: registers the Japanese dictionaries, adds `ja`
- * to the selectable locales, keeps the Japanese font stylesheet in sync with
- * the active locale, and restores a persisted selection. Everything is
- * registered through `ctx.effect` and reversed on teardown.
- */
 import type { Context as ClientContext } from "@deepseek-ai/cordis";
 import { DICTS } from "./dictionaries.ts";
 import { createFontStylesheet } from "./font.ts";
@@ -21,9 +15,9 @@ export function apply(ctx: ClientContext): void {
     };
   }, "locale-ja: japanese dictionaries");
 
-  // Registration order matters: the language must exist before the runtime
-  // re-resolves a stored `ja` preference, and its dictionaries must be in
-  // place so the switch lands on Japanese copy rather than fallbacks.
+  // Dictionaries must land before the language exists: a stored `ja`
+  // preference re-resolves on registration and would otherwise flip the UI
+  // onto English fallback copy.
   ctx.effect(() => extendLocaleService(locale), "locale-ja: selectable ja locale");
 
   ctx.effect(() => {
