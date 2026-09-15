@@ -119,6 +119,8 @@ stand-in locale service.
 Japanese copy lives in `src/client/dictionaries.ts`. Each dictionary is typed
 against its namespace's shipped key union, so a renamed, removed, or added DSH
 key is a compile-time error. Preserve placeholders such as `{name}` verbatim.
+Follow the [Japanese translation guide](./docs/translation-guide.md) for
+terminology, button wording, and checks against the actual UI.
 
 Thirty-three of the 42 namespaces use unions from the owning package's shipped
 declarations. The other nine — `directory-browser`, `permission.access`,
@@ -136,8 +138,9 @@ After editing a dictionary, run:
 pnpm typecheck
 ```
 
-This is both the dictionary correctness check and the DSH-upgrade drift check
-at the pinned devDependency versions.
+This checks the typed dictionary keys at the pinned devDependency versions.
+It does not validate Japanese meaning or placeholders inside string values;
+review those against the shipped source strings and their UI call sites.
 
 
 ## End-to-end suite
@@ -168,6 +171,20 @@ Prerequisites: a running Docker daemon (OrbStack/Docker Desktop), and
 one-time `pnpm exec playwright install chromium`. CI runs the same suite on
 every PR (`e2e` job) and gates releases on it. It is deliberately not part of
 `mise run check` or any git hook.
+
+The installed phase also opens the Japanese permission confirmation and preset
+duplication dialogs, checks acknowledgement and invalid-ID behavior, and cancels
+both actions. The conversation phase opens the per-turn and session token-usage
+panels and checks the mock's numeric values. Screenshots of these Japanese views
+are saved under `e2e/.artifacts/` even on success for visual review. These checks
+cover those specific flows; passing E2E does not establish linguistic accuracy
+for every dictionary entry.
+
+Compact labels also have before/after layout checks at viewport widths of 1280px
+and 1024px. These reject new line breaks, clipped text, and labels that force
+previously single-line neighboring text to wrap. The JSON measurements and
+screenshots are retained in the same artifact directory. See the translation
+guide for the text-substitution method and its scope.
 
 The DSH under test defaults to the pinned version above; override it with
 `DSH_E2E_DSH_VERSION` (an exact version, `next`, or `latest`):
@@ -219,7 +236,7 @@ drifts:
 - **`mise run drift`** (`scripts/check-dict-drift.ts`) installs that
   release's full web tree into a throwaway directory and diffs the Japanese
   dictionaries against the shipped locale key contracts — every namespace,
-  including the three local-copy ones — reporting missing keys (fallback
+  including all nine locally declared ones — reporting missing keys (fallback
   leaks through), stale keys, and uncovered or removed namespaces.
 
 Both checks also run on manual dispatch, where a `dsh_version` input accepts
