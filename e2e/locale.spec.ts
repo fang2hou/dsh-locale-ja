@@ -10,6 +10,7 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
 import { authUrl, installPlugin, removePlugin, restartAndWait } from "./harness.ts";
+import { checkSingleLineCopy } from "./copy-layout.ts";
 
 const BASE = process.env.DSH_BASE_URL ?? "http://127.0.0.1:3080";
 const FONT_TAG = 'style[data-plugin-css="@fang2hou/dsh-locale-ja/japanese-font.css"]';
@@ -121,12 +122,77 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     await expect(page.getByText("Language", { exact: true })).toBeVisible();
     expect(await page.locator(FONT_TAG).count()).toBe(0);
   });
+
+  test("Japanese settings actions describe their dialogs and cancellation", async ({
+    page,
+  }, testInfo) => {
+    await openApp(page);
+    await dismissOnboarding(page);
+    await openSettings(page, "Settings");
+    await openLanguageMenu(page, "English");
+    await page.getByRole("menuitem", { name: "日本語" }).click();
+
+    const permission = page.getByRole("button", {
+      name: "ワークスペース内の書き込み",
+      exact: true,
+    });
+    await checkSingleLineCopy(page, testInfo, "settings-labels", [
+      { locator: permission, before: "ワークスペース内書き込み" },
+      {
+        locator: page.getByRole("button", { name: "キューに追加", exact: true }),
+        before: "キューに送信",
+      },
+    ]);
+    await permission.click();
+    await page.getByRole("menuitem", { name: "フルアクセス", exact: true }).click();
+    const risk = page.getByRole("dialog", { name: "フルアクセスを有効にしますか？", exact: true });
+    await expect(risk).toContainText("新しいセッション");
+    await expect(risk.getByRole("button", { name: "フルアクセスを有効化" })).toBeDisabled();
+    await risk.getByRole("checkbox", { name: "リスクを理解した上で続行します" }).check();
+    await expect(risk.getByRole("button", { name: "フルアクセスを有効化" })).toBeEnabled();
+    await checkSingleLineCopy(page, testInfo, "permission-labels", [
+      {
+        locator: risk.getByRole("button", { name: "フルアクセスを有効化" }),
+        before: "Full Access を有効化",
+      },
+      { locator: risk.getByRole("heading"), before: "Full Access を有効にしますか？" },
+    ]);
+    await page.screenshot({ path: testInfo.outputPath("permission-ja.png") });
+    await risk.getByRole("button", { name: "キャンセル", exact: true }).click();
+    await expect(risk).toBeHidden();
+    await expect(permission).toBeVisible();
+
+    await page.getByRole("button", { name: "プリセット", exact: true }).click();
+    await page.getByRole("button", { name: "複製: スタンダード", exact: true }).click();
+    const copy = page.getByRole("dialog", { name: /プリセットを複製/ });
+    await expect(copy).toContainText("後から変更できません");
+    await copy.getByRole("textbox", { name: "ID", exact: true }).fill("INVALID ID");
+    await expect(copy.getByRole("alert")).toContainText("小文字、数字、ハイフン");
+    await expect(copy.getByRole("button", { name: "作成", exact: true })).toBeDisabled();
+    await checkSingleLineCopy(page, testInfo, "preset-labels", [
+      {
+        locator: copy.getByRole("heading"),
+        before: "プリセットをコピー新規 · コピー元 スタンダード",
+      },
+      {
+        locator: copy.getByRole("alert"),
+        before: "使用できるのは小文字、数字、ハイフンのみで、先頭は文字または数字にしてください。",
+      },
+    ]);
+    await page.screenshot({ path: testInfo.outputPath("preset-ja.png") });
+    await copy.getByRole("button", { name: "キャンセル", exact: true }).click();
+    await expect(copy).toBeHidden();
+
+    await page.getByRole("button", { name: "一般", exact: true }).click();
+    await openLanguageMenu(page, "日本語");
+    await page.getByRole("menuitem", { name: "English", exact: true }).click();
+  });
 });
 
 test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome", () => {
   // The container's DEEPSEEK_BASE_URL points at the host-side mock
   // (e2e/mock-llm.ts), so a real turn completes without credentials.
-  test("a turn completes with Japanese composer and reply chrome", async ({ page }) => {
+  test("a turn completes with Japanese composer and reply chrome", async ({ page }, testInfo) => {
     await openApp(page);
     await dismissOnboarding(page);
 
@@ -154,6 +220,56 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
     await expect(
       page.getByText("これはモック LLM の応答です。", { exact: false }).first(),
     ).toBeVisible({ timeout: 30_000 });
+
+    const usageButton = page.getByRole("button", { name: /^使用量 / });
+    await expect(usageButton).toBeVisible();
+    await checkSingleLineCopy(page, testInfo, "reply-labels", [
+      { locator: page.getByText("思考しました", { exact: true }), before: "思考済み" },
+      { locator: usageButton, before: (await usageButton.innerText()).replace("使用量", "用量") },
+    ]);
+
+    // Open real reply controls, so a translated label must lead to the
+    // intended data rather than merely exist in the dictionary.
+    await usageButton.click();
+    const usage = page.getByRole("dialog", { name: "このターンの使用量", exact: true });
+    await expect(usage.getByText("出力", { exact: true })).toBeVisible();
+    await expect(usage).toContainText("180 tok");
+    await expect(usage).toContainText("うち推論 64 tok");
+    await checkSingleLineCopy(page, testInfo, "usage-labels", [
+      {
+        locator: usage.getByText("このターンの使用量", { exact: true }),
+        before: "このターンの用量",
+      },
+      {
+        locator: usage.getByText("（うち推論 64 tok）", { exact: true }),
+        before: "（うち推理 64 tok）",
+      },
+    ]);
+    await page.screenshot({ path: testInfo.outputPath("turn-usage-ja.png") });
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("button", { name: /^1.*tok.*ヒット率/ }).click();
+    const totals = page.getByRole("dialog", { name: "トークン使用量", exact: true });
+    await expect(totals.getByText("キャッシュ読み取り", { exact: true })).toBeVisible();
+    await expect(totals).toContainText("768 tok");
+    await checkSingleLineCopy(page, testInfo, "session-usage-labels", [
+      { locator: totals.getByText("トークン使用量", { exact: true }), before: "トークン用量" },
+    ]);
+    await page.screenshot({ path: testInfo.outputPath("session-usage-ja.png") });
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("button", { name: /^1 ターン 1 ステップ/ }).click();
+    const timing = page.getByRole("dialog", { name: "セッション統計", exact: true });
+    await expect(
+      timing.getByText("最初のトークンまでの平均時間（TTFT）", { exact: true }),
+    ).toBeVisible();
+    await checkSingleLineCopy(page, testInfo, "timing-labels", [
+      {
+        locator: timing.getByText("最初のトークンまでの平均時間（TTFT）", { exact: true }),
+        before: "初トークン平均（TTFT）",
+      },
+    ]);
+    await page.screenshot({ path: testInfo.outputPath("session-timing-ja.png") });
   });
 });
 

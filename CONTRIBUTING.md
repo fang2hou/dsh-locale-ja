@@ -23,7 +23,9 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
 - Search existing issues before opening a new one.
 - For translation fixes, edit `src/client/dictionaries.ts`; name the affected
   namespace and key, the preferred Japanese wording, and run `pnpm typecheck`
-  to validate the namespace keys.
+  to validate the namespace keys. Follow the
+  [Japanese translation guide](./docs/translation-guide.md), preserve the source
+  placeholders, and include the UI context for action labels.
 - For bugs, include the DSH version, the active locale, and reproduction steps.
 
 ## Pull requests
