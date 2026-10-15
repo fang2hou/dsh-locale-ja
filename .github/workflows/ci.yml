@@ -52,23 +52,95 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - name: Checkout
+      # "e2e (docker dsh web + playwright)" is a required check context, so
+      # the job must always run and report — only its expensive steps are
+      # guarded. A docs-only change short-circuits to a green no-op instead
+      # of a skipped job (a skipped job does not satisfy the ruleset); same
+      # philosophy as pr-title.yml: never leave the check context missing.
+      - name: Checkout (full history)
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect docs-only change
+        id: docs_only
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+
+          # Docs-only patterns (deliberate list):
+          #   *.md    — any Markdown, anywhere (README, AGENTS, ARCHITECTURE,
+          #             CONTRIBUTING, DEVELOPMENT, docs/, PR template)
+          #   docs/*  — the whole docs/ tree, including future non-Markdown
+          #             assets such as images
+          #   LICENSE — license text
+          # Everything else — src, e2e, scripts, package.json, pnpm-lock.yaml,
+          # mise.toml, tsconfig, lint/format config, cordis.patch.yml,
+          # .github process files, this workflow — counts as code. Unknown
+          # file kinds fail toward running e2e.
+          is_doc() {
+            case "$1" in
+              *.md | docs/* | LICENSE) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # Manual runs always exercise the full suite.
+            echo "skip=false" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            range="${BASE_SHA}...HEAD" # PR base sha vs head, via merge base
+          else
+            range="HEAD^..HEAD" # push to main
+          fi
+
+          if ! changed="$(git diff --name-only --no-renames "$range")"; then
+            # Broken diff range: fail toward running e2e, never toward skipping.
+            echo "git diff failed for range '$range'; running e2e"
+            echo "skip=false" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          skip=true
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            if ! is_doc "$file"; then
+              echo "$file is not documentation; e2e will run"
+              skip=false
+              break
+            fi
+          done <<EOF
+          $changed
+          EOF
+
+          echo "skip=$skip" >>"$GITHUB_OUTPUT"
+          if [ "$skip" = "true" ]; then
+            echo "e2e skipped — docs-only change; this no-op run satisfies the required check." >>"$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Install mise and tools
+        if: steps.docs_only.outputs.skip != 'true'
         uses: jdx/mise-action@v4
 
       - name: Install dependencies
+        if: steps.docs_only.outputs.skip != 'true'
         run: mise run install
 
       - name: Cache Playwright browsers
+        if: steps.docs_only.outputs.skip != 'true'
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install Playwright browser (chromium)
+        if: steps.docs_only.outputs.skip != 'true'
         run: mise run playwright
 
       - name: Run E2E (build, pack, docker dsh web, playwright)
+        if: steps.docs_only.outputs.skip != 'true'
         run: mise run e2e
