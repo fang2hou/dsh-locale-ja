@@ -31,7 +31,7 @@ as a mise pin.
 ```bash
 mise install          # provision runtimes and CLI tools
 pnpm install          # install dev dependencies
-prek install          # install git hooks (uses .pre-commit-config.yaml)
+prek install          # install git hooks (uses prek.toml)
 ```
 
 ## Toolchain
