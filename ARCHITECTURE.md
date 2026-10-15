@@ -7,7 +7,7 @@ agents modify the codebase. Keep it short and operational.
 ## What this project is
 
 `@fang2hou/dsh-locale-ja` is a **standard DSH client plugin package** for
-DeepSeek Harness (DSH) `0.1.5-rc.2`, supported on the `web` profile. Its Host
+DeepSeek Harness (DSH) `0.2.0-rc.2`, supported on the `web` profile. Its Host
 half (`src/index.ts`) exports an empty `apply()` only so the package can mount a
 Loader row; its browser half (`src/client/index.ts`) performs locale
 registration and all user-facing work. `dsh plugin --profile web add
@@ -70,10 +70,10 @@ registration and all user-facing work. `dsh plugin --profile web add
    they are exposed.** `src/client/dictionaries.ts` must keep local unions only
    for namespaces whose owning packages do not expose them through their
    `exports` maps — `directory-browser`
-   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.1.5-rc.2`),
+   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.2.0-rc.2`),
    `permission.access`
-   (`@deepseek-ai/dsh-client-ui-permission-presets@0.1.5-rc.2`), `trajectory`
-   (`@deepseek-ai/dsh-client-ui-trajectory@0.1.5-rc.2`), and the
+   (`@deepseek-ai/dsh-client-ui-permission-presets@0.2.0-rc.2`), `trajectory`
+   (`@deepseek-ai/dsh-client-ui-trajectory@0.2.0-rc.2`), and the
    runtime-only namespaces registered through the untyped overload — naming
    each copied source and version; `pnpm typecheck` is the drift check for the
    typed set. This makes platform key renames, additions, and removals
@@ -95,7 +95,7 @@ registration and all user-facing work. `dsh plugin --profile web add
   `addLanguage` language-pack API and hands back the runtime's disposer.
 - `src/client/font.ts` — creates, synchronizes, and disposes the
   plugin-owned, locale-scoped style tag for `--dsw-font-family`.
-- `src/client/dictionaries.ts` — defines the 42 Japanese namespace
+- `src/client/dictionaries.ts` — defines the 54 Japanese namespace
   dictionaries and their platform or documented local key unions.
 - `scripts/build.ts` — emits declarations, the Host ESM entry, and the
   browser loader bundle, then enforces its envelope, purity, module-syntax, and

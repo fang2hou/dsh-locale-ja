@@ -7,7 +7,7 @@ import { setTimeout as sleep } from "node:timers/promises";
 
 export const IMAGE = "dsh-locale-ja-e2e";
 export const CONTAINER = "dsh-locale-ja-e2e";
-export const DEFAULT_DSH_VERSION = "0.1.5-rc.2";
+export const DEFAULT_DSH_VERSION = "0.2.0-rc.2";
 
 // First boot installs the whole profile dependency tree in-container.
 const BOOT_TIMEOUT_MS = Number(process.env.DSH_E2E_BOOT_TIMEOUT_MS ?? 300_000);
