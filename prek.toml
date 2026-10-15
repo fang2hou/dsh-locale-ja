@@ -1,0 +1,64 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "oxlint"
+name = "oxlint"
+entry = "pnpm"
+args = ["--silent", "lint"]
+language = "system"
+types = ["ts"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "oxfmt"
+name = "oxfmt (check)"
+entry = "pnpm"
+args = ["--silent", "format:check"]
+language = "system"
+types = ["ts"]
+pass_filenames = false
+
+[[repos.hooks]]
+id = "typecheck"
+name = "tsc (typecheck)"
+entry = "pnpm"
+args = ["--silent", "typecheck"]
+language = "system"
+types = ["ts"]
+pass_filenames = false
+stages = ["pre-push"]
+
+[[repos.hooks]]
+id = "gitleaks"
+name = "gitleaks (staged diff)"
+entry = "gitleaks"
+args = ["git", "--staged", "--pre-commit", "--redact", "--no-banner"]
+language = "system"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "actionlint"
+name = "actionlint (github workflows)"
+entry = "actionlint"
+language = "system"
+pass_filenames = false
+files = '^\.github/workflows/'
+
+[[repos.hooks]]
+id = "shellcheck"
+name = "shellcheck"
+entry = "shellcheck"
+language = "system"
+types = ["shell"]
+
+[[repos.hooks]]
+id = "cog-verify"
+name = "conventional commits (cocogitto)"
+entry = "./scripts/cog-verify-hook.sh"
+language = "script"
+stages = ["commit-msg"]
