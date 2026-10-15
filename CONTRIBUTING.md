@@ -45,7 +45,7 @@ See [DEVELOPMENT.md](./DEVELOPMENT.md) for setup and tasks, and
    section; state AI assistance explicitly when it applies. The PR title
    follows Conventional Commits because squash merging makes it the final
    commit message; CI validates it with `cog verify` (`validate-pr-title` job
-   in `.github/workflows/ci.yml`).
+   in `.github/workflows/pr-title.yml`).
 
 ## Commits
 
