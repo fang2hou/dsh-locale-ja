@@ -302,24 +302,32 @@ Trusted publishing requires npm CLI ≥ 11.5.1 and Node ≥ 22.14 (both met by t
 `node = "24"` tool in `mise.toml`), and a GitHub-hosted runner (the workflow
 uses `ubuntu-latest`). A trusted publisher is already registered on npmjs.com
 for this repository and the `release.yml` workflow, so routine releases need
-no local npm credentials: pushing the tag is the whole release.
+no local npm credentials: creating the GitHub Release is the whole release.
 
 ### Routine releases
 
-The pushed `v*` tag is the single source of truth for the version — the
-workflow stamps `package.json` from it before publishing, so no manual bump is
-required and a tag can never ship a stale version.
+Every version ships as a GitHub Release — v0.2.0 through v0.6.0 each have one,
+with auto-generated "What's Changed" notes. The release carries the `v*` tag,
+and the pushed tag triggers `release.yml`.
+
+The tag is the single source of truth for the version — the workflow stamps
+`package.json` from it before publishing, so no manual bump is required and a
+tag can never ship a stale version.
 
 ```bash
 # 1. commit any pending changes (Conventional Commits — validated by the cog
 #    commit-msg hook)
 
-# 2. tag and push
-git tag vX.Y.Z
-git push origin main --tags
+# 2. create the GitHub Release on main (creates the tag, publishes the notes)
+gh release create vX.Y.Z --target main --generate-notes
 ```
 
-Pushing the `v*` tag triggers the workflow: it installs, runs `mise run check`
-and the E2E suite, sets the package version from the tag, and publishes via
-OIDC (provenance is attached automatically). Confirm at
-<https://www.npmjs.com/package/@fang2hou/dsh-locale-ja>.
+Creating the release pushes the `v*` tag, which triggers the workflow: it
+installs, runs `mise run check` and the E2E suite, sets the package version
+from the tag, and publishes via OIDC (provenance is attached automatically).
+Confirm at <https://www.npmjs.com/package/@fang2hou/dsh-locale-ja>.
+
+Do not push the tag with `git push` directly: that skips the GitHub Release,
+leaving npm published without a release entry (this happened with v0.6.0 and
+had to be repaired with `gh release create v0.6.0 --verify-tag
+--generate-notes`).
