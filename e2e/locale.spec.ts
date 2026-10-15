@@ -163,25 +163,28 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     await expect(permission).toBeVisible();
 
     await page.getByRole("button", { name: "プリセット", exact: true }).click();
-    await page.getByRole("button", { name: "複製: スタンダード", exact: true }).click();
-    const copy = page.getByRole("dialog", { name: /プリセットを複製/ });
-    await expect(copy).toContainText("後から変更できません");
-    await copy.getByRole("textbox", { name: "ID", exact: true }).fill("INVALID ID");
-    await expect(copy.getByRole("alert")).toContainText("小文字、数字、ハイフン");
-    await expect(copy.getByRole("button", { name: "作成", exact: true })).toBeDisabled();
+    // 0.2.0 replaced preset duplication with per-mode guide dialogs.
+    await page.getByRole("button", { name: "モードの詳細: 標準モード" }).click();
+    const guide = page.getByRole("dialog", { name: "標準モード", exact: true });
+    await expect(guide.getByRole("tablist", { name: "ガイドの内容" })).toBeVisible();
+    await expect(guide.getByRole("heading", { name: "仕組み" })).toBeVisible();
+    await expect(guide).toContainText("サブエージェント、ワークフロー、コンテキスト圧縮");
+    await guide.getByRole("tab", { name: "使い方" }).click();
+    await expect(guide.getByRole("heading", { name: "バグを修正する" })).toBeVisible();
+    await expect(guide.getByText("サンプルタスク").first()).toBeVisible();
     await checkSingleLineCopy(page, testInfo, "preset-labels", [
       {
-        locator: copy.getByRole("heading"),
-        before: "プリセットをコピー新規 · コピー元 スタンダード",
+        locator: guide.getByRole("tab", { name: "モードの詳細" }),
+        before: "Mode details",
       },
       {
-        locator: copy.getByRole("alert"),
-        before: "使用できるのは小文字、数字、ハイフンのみで、先頭は文字または数字にしてください。",
+        locator: guide.getByRole("tab", { name: "使い方" }),
+        before: "How to use",
       },
     ]);
     await page.screenshot({ path: testInfo.outputPath("preset-ja.png") });
-    await copy.getByRole("button", { name: "キャンセル", exact: true }).click();
-    await expect(copy).toBeHidden();
+    await guide.getByRole("button", { name: "閉じる", exact: true }).click();
+    await expect(guide).toBeHidden();
 
     await page.getByRole("button", { name: "一般", exact: true }).click();
     await openLanguageMenu(page, "日本語");
@@ -223,8 +226,8 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
 
     const usageButton = page.getByRole("button", { name: /^使用量 / });
     await expect(usageButton).toBeVisible();
+    await expect(page.getByText(/^完了、所要時間/).first()).toBeVisible();
     await checkSingleLineCopy(page, testInfo, "reply-labels", [
-      { locator: page.getByText("思考しました", { exact: true }), before: "思考済み" },
       { locator: usageButton, before: (await usageButton.innerText()).replace("使用量", "用量") },
     ]);
 
@@ -234,21 +237,19 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
     const usage = page.getByRole("dialog", { name: "このターンの使用量", exact: true });
     await expect(usage.getByText("出力", { exact: true })).toBeVisible();
     await expect(usage).toContainText("180 tok");
-    await expect(usage).toContainText("うち推論 64 tok");
+    // The 0.2.0 Messages protocol reports no reasoning-token usage, so the
+    // うち推論 segment no longer renders; thinking deltas still show below.
+    await expect(usage.getByText("キャッシュ読み取り", { exact: true })).toBeVisible();
     await checkSingleLineCopy(page, testInfo, "usage-labels", [
       {
         locator: usage.getByText("このターンの使用量", { exact: true }),
         before: "このターンの用量",
       },
-      {
-        locator: usage.getByText("（うち推論 64 tok）", { exact: true }),
-        before: "（うち推理 64 tok）",
-      },
     ]);
     await page.screenshot({ path: testInfo.outputPath("turn-usage-ja.png") });
     await page.keyboard.press("Escape");
 
-    await page.getByRole("button", { name: /^1.*tok.*ヒット率/ }).click();
+    await page.getByRole("button", { name: /tok · ヒット率/ }).click();
     const totals = page.getByRole("dialog", { name: "トークン使用量", exact: true });
     await expect(totals.getByText("キャッシュ読み取り", { exact: true })).toBeVisible();
     await expect(totals).toContainText("768 tok");

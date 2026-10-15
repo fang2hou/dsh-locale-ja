@@ -71,6 +71,18 @@ const RUNTIME_SCANNED_NAMESPACES: { ns: string; pkg: string }[] = [
     ns: "sidebarPdf",
     pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
   },
+  {
+    ns: "sidebarExcel",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "sidebarOffice",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+  },
+  {
+    ns: "sidebarTerminal",
+    pkg: "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+  },
 ];
 
 function parseArgs(argv: string[]): string {

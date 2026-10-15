@@ -1,9 +1,12 @@
 /**
- * A minimal DeepSeek-compatible chat-completions mock for local development
- * and E2E — streamed content and reasoning deltas, a finish frame with
- * usage, and the [DONE] sentinel — with zero dependencies (`dsh-llm-deepseek`
- * is the consumer). Point DSH at it with DEEPSEEK_BASE_URL and
- * DEEPSEEK_API_KEY=mock-key; `node e2e/mock-llm.ts [port]` runs it standalone.
+ * A minimal DeepSeek-compatible mock for local development and E2E, with
+ * zero dependencies (`dsh-llm-deepseek` is the consumer). Point DSH at it
+ * with DEEPSEEK_BASE_URL and DEEPSEEK_API_KEY=mock-key; `node e2e/mock-llm.ts
+ * [port]` runs it standalone. Two protocols, both deterministic:
+ * - `/chat/completions` (OpenAI style, DSH ≤ 0.1.5): streamed content and
+ *   reasoning deltas, a finish frame with usage, the [DONE] sentinel.
+ * - `/messages` (Anthropic Messages, DSH ≥ 0.2.0): message_start →
+ *   thinking/text content blocks → message_delta with usage → message_stop.
  */
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
@@ -26,6 +29,13 @@ const CONTENT = [
   "統計行（ターン数・所要時間・トークン数）の表示確認が目的です。",
 ];
 
+/** The same usage in Anthropic Messages field names (DSH ≥ 0.2.0 path). */
+const MESSAGES_USAGE = {
+  input_tokens: USAGE.prompt_tokens,
+  output_tokens: USAGE.completion_tokens,
+  cache_read_input_tokens: USAGE.prompt_tokens_details.cached_tokens,
+};
+
 /** Frame delay so LLM/tool durations and TTFT in the stats dialog are non-zero. */
 const FRAME_DELAY_MS = 60;
 
@@ -41,6 +51,29 @@ export function startMockLlm(port: number, log: (line: string) => void = console
   const server = http.createServer((req, res) => {
     if (req.method === "GET" && req.url === "/health") {
       res.writeHead(200).end("ok");
+      return;
+    }
+    if (req.method === "POST" && req.url?.endsWith("/messages")) {
+      const msgChunks: Buffer[] = [];
+      req.on("data", (chunk: Buffer) => msgChunks.push(chunk));
+      req.on("end", () => {
+        const body = JSON.parse(Buffer.concat(msgChunks).toString("utf8")) as ChatRequest;
+        log(`[mock-llm] ${req.url} stream=${String(body.stream ?? false)}`);
+        if (body.stream === true) {
+          void streamMessagesReply(res, wantsReasoning(body));
+        } else {
+          res.writeHead(200, { "content-type": "application/json" });
+          res.end(
+            JSON.stringify({
+              type: "message",
+              role: "assistant",
+              content: [{ type: "text", text: CONTENT.join("") }],
+              stop_reason: "end_turn",
+              usage: MESSAGES_USAGE,
+            }),
+          );
+        }
+      });
       return;
     }
     if (req.method !== "POST" || !req.url?.endsWith("/chat/completions")) {
@@ -100,6 +133,68 @@ async function streamReply(res: http.ServerResponse, reasoning: boolean): Promis
   // Finish-attached usage: the deferred usage/finish chunks key off [DONE].
   send({ choices: [{ index: 0, delta: {}, finish_reason: "stop" }], usage: USAGE });
   res.write("data: [DONE]\n\n");
+  res.end();
+}
+
+// Anthropic Messages SSE: the state machine in `dsh-llm-deepseek` ≥ 0.2.0
+// validates event ordering strictly, so emit the canonical sequence.
+async function streamMessagesReply(res: http.ServerResponse, reasoning: boolean): Promise<void> {
+  res.writeHead(200, {
+    "content-type": "text/event-stream",
+    "cache-control": "no-cache",
+    connection: "keep-alive",
+  });
+  const send = (event: string, payload: unknown): void => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+  };
+  send("message_start", {
+    type: "message_start",
+    message: {
+      id: "msg_mock_e2e",
+      type: "message",
+      role: "assistant",
+      content: [],
+      usage: MESSAGES_USAGE,
+    },
+  });
+  let index = 0;
+  if (reasoning) {
+    send("content_block_start", {
+      type: "content_block_start",
+      index,
+      content_block: { type: "thinking", thinking: "" },
+    });
+    for (const text of REASONING) {
+      send("content_block_delta", {
+        type: "content_block_delta",
+        index,
+        delta: { type: "thinking_delta", thinking: text },
+      });
+      await sleep(FRAME_DELAY_MS);
+    }
+    send("content_block_stop", { type: "content_block_stop", index });
+    index += 1;
+  }
+  send("content_block_start", {
+    type: "content_block_start",
+    index,
+    content_block: { type: "text", text: "" },
+  });
+  for (const text of CONTENT) {
+    send("content_block_delta", {
+      type: "content_block_delta",
+      index,
+      delta: { type: "text_delta", text },
+    });
+    await sleep(FRAME_DELAY_MS);
+  }
+  send("content_block_stop", { type: "content_block_stop", index });
+  send("message_delta", {
+    type: "message_delta",
+    delta: { stop_reason: "end_turn" },
+    usage: { output_tokens: MESSAGES_USAGE.output_tokens },
+  });
+  send("message_stop", { type: "message_stop" });
   res.end();
 }
 
