@@ -26,6 +26,9 @@ export async function checkSingleLineCopy(
         );
       });
       for (const { locator, before } of cases) {
+        // 0.2.1's denser settings dialog pushes lower rows below the fold;
+        // elementFromPoint misses off-screen text and reads as clipped.
+        await locator.scrollIntoViewIfNeeded();
         await expect(locator).toBeVisible();
         const metrics = await locator.evaluate((element, previous) => {
           const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);

@@ -3,7 +3,7 @@
 This document describes how to develop, validate, and release
 `dsh-locale-ja`.
 
-The project is pre-release (`0.4.0`) and supports the DSH `0.2.0-rc.2` `web`
+The project is pre-release (`0.4.0`) and supports the DSH `0.2.1-rc.2` `web`
 profile and browser UI only. The `0.1.0` on npm is the older, dynamically
 loaded artifact; the standard package ships from `0.2.0`.
 
@@ -122,13 +122,14 @@ key is a compile-time error. Preserve placeholders such as `{name}` verbatim.
 Follow the [Japanese translation guide](./docs/translation-guide.md) for
 terminology, button wording, and checks against the actual UI.
 
-Thirty-three of the 42 namespaces use unions from the owning package's shipped
-declarations. The other nine — `directory-browser`, `permission.access`,
+Forty-five of the 57 namespaces use unions from the owning package's shipped
+declarations. The other twelve — `directory-browser`, `permission.access`,
 `trajectory`, and the runtime-only namespaces (`documentHtml`,
-`documentMarkdown`, `reference`, `sidebarCodePreview`, `sidebarImage`,
-`sidebarPdf`) — use documented local copies because their owning packages do
-not expose those unions through their `exports` maps; `pnpm typecheck` cannot
-see drift in those nine, but the upstream drift check below can — it reads
+`documentMarkdown`, `reference`, `sidebarCodePreview`, `sidebarExcel`,
+`sidebarImage`, `sidebarOffice`, `sidebarPdf`, `sidebarTerminal`) — use
+documented local copies because their owning packages do not expose those
+unions through their `exports` maps; `pnpm typecheck` cannot see drift in
+those twelve, but the upstream drift check below can — it reads
 the key contracts straight out of any DSH release (typed declarations plus
 the shipped bundles' `locale.register` call sites).
 
@@ -147,7 +148,7 @@ review those against the shipped source strings and their UI call sites.
 
 `mise run e2e` (`e2e/run-e2e.ts`):
 1. builds the plugin tarball from the current source (`pnpm pack`),
-2. builds a Docker image pinning `@deepseek-ai/dsh@0.2.0-rc.2`
+2. builds a Docker image pinning `@deepseek-ai/dsh@0.2.1-rc.2`
    (`e2e/Dockerfile`),
 3. starts `dsh web` in a container with a throwaway in-container `$DSH_HOME`
    (booting with `--no-open`; readiness is any HTTP response, since the
@@ -191,7 +192,7 @@ The DSH under test defaults to the pinned version above; override it with
 
 ```bash
 mise run e2e-next                   # next @deepseek-ai/dsh
-DSH_E2E_DSH_VERSION=0.2.0-rc.2 mise run e2e   # an exact upcoming version
+DSH_E2E_DSH_VERSION=0.2.1-rc.2 mise run e2e   # an exact upcoming version
 ```
 
 ## Local dev environment (Docker + hot reload)
@@ -236,7 +237,7 @@ drifts:
 - **`mise run drift`** (`scripts/check-dict-drift.ts`) installs that
   release's full web tree into a throwaway directory and diffs the Japanese
   dictionaries against the shipped locale key contracts — every namespace,
-  including all nine locally declared ones — reporting missing keys (fallback
+  including all twelve locally declared ones — reporting missing keys (fallback
   leaks through), stale keys, and uncovered or removed namespaces.
 
 Both checks also run on manual dispatch, where a `dsh_version` input accepts
@@ -255,9 +256,9 @@ dsh plugin --profile web add <absolute path to the tgz>
 dsh web
 ```
 
-In the browser, open **Settings → Language** and choose **日本語**. The path
-to the tarball must be absolute because `pnpm` runs with its working directory
-set to the profile directory. Remove the local package with:
+In the browser, open **Account menu → Settings → Language** and choose
+**日本語**. The path to the tarball must be absolute because `pnpm` runs with
+its working directory set to the profile directory. Remove the local package
 
 ```bash
 dsh plugin --profile web remove @fang2hou/dsh-locale-ja

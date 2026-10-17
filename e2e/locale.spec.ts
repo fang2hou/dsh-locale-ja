@@ -42,8 +42,15 @@ async function dismissOnboarding(page: Page): Promise<void> {
   throw new Error("onboarding dialogs never settled");
 }
 
-async function openSettings(page: Page, triggerLabel: string): Promise<void> {
-  await page.getByRole("button", { name: triggerLabel, exact: true }).click();
+// 0.2.1 folded the sidebar Settings button into the account menu: the
+// bottom-left "Account menu" button opens a menu whose first item is Settings.
+async function openSettings(page: Page, locale: "en" | "ja"): Promise<void> {
+  const labels =
+    locale === "ja"
+      ? { account: "アカウントメニュー", settings: "設定" }
+      : { account: "Account menu", settings: "Settings" };
+  await page.getByRole("button", { name: labels.account, exact: true }).click();
+  await page.getByRole("menuitem", { name: labels.settings, exact: true }).click();
   await page.getByRole("dialog").waitFor();
 }
 
@@ -64,7 +71,7 @@ test.describe.serial("baseline: fresh DSH web without the plugin", () => {
   }) => {
     await openApp(page);
     await dismissOnboarding(page);
-    await openSettings(page, "Settings");
+    await openSettings(page, "en");
     await expect(page.getByText("Language", { exact: true })).toBeVisible();
 
     await openLanguageMenu(page, "English");
@@ -86,7 +93,7 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
   test("日本語 selectable, applies, persists, and reverses", async ({ page, context }) => {
     await openApp(page);
     await dismissOnboarding(page);
-    await openSettings(page, "Settings");
+    await openSettings(page, "en");
 
     await openLanguageMenu(page, "English");
     expect(await menuItems(page)).toEqual(["English", "中文", "日本語"]);
@@ -105,7 +112,7 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     // the same context both come back in Japanese.
     await page.reload();
     await dismissOnboarding(page);
-    await openSettings(page, "設定");
+    await openSettings(page, "ja");
     await expect(page.getByText("言語", { exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "日本語", exact: true })).toBeVisible();
     await expect(page.locator(FONT_TAG)).toHaveCount(1);
@@ -113,7 +120,7 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
     const second = await context.newPage();
     await openApp(second);
     await dismissOnboarding(second);
-    await openSettings(second, "設定");
+    await openSettings(second, "ja");
     await expect(second.getByText("言語", { exact: true })).toBeVisible();
 
     // Deactivate: back to English, no font tag.
@@ -128,7 +135,7 @@ test.describe.serial("installed: load, activate, persist, deactivate", () => {
   }, testInfo) => {
     await openApp(page);
     await dismissOnboarding(page);
-    await openSettings(page, "Settings");
+    await openSettings(page, "en");
     await openLanguageMenu(page, "English");
     await page.getByRole("menuitem", { name: "日本語" }).click();
 
@@ -201,10 +208,12 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
 
     // The previous phase ends back on English; switch to Japanese through the
     // shipped menu — the same path a user takes.
-    await openSettings(page, "Settings");
+    await openSettings(page, "en");
     await openLanguageMenu(page, "English");
     await page.getByRole("menuitem", { name: "日本語" }).click();
-    await expect(page.getByRole("button", { name: "設定", exact: true })).toBeVisible();
+    // 0.2.1 has no sidebar Settings button anymore; the settings dialog
+    // title turns Japanese instead.
+    await expect(page.getByRole("dialog", { name: "設定", exact: true })).toBeVisible();
     await expect(page.locator(FONT_TAG)).toHaveCount(1);
     await page.keyboard.press("Escape");
     await page.getByRole("dialog").waitFor({ state: "hidden" });
@@ -283,7 +292,7 @@ test.describe.serial("removed: uninstall reverts to shipped default", () => {
   test("日本語 gone; UI is English again; no plugin artifacts", async ({ page }) => {
     await openApp(page);
     await dismissOnboarding(page);
-    await openSettings(page, "Settings");
+    await openSettings(page, "en");
     await expect(page.getByText("Language", { exact: true })).toBeVisible();
 
     await openLanguageMenu(page, "English");
