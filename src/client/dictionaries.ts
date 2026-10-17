@@ -20,6 +20,8 @@ import type {} from "@deepseek-ai/dsh-client-ui-conversation/client";
 import type {} from "@deepseek-ai/dsh-client-ui-cordis/client";
 // deliverables
 import type {} from "@deepseek-ai/dsh-client-ui-deliverables/client";
+// schedule.catalog, schedule.manager
+import type {} from "@deepseek-ai/dsh-client-ui-schedule/client";
 // goal
 import type {} from "@deepseek-ai/dsh-client-ui-goal/client";
 // slash.menu
@@ -32,6 +34,8 @@ import type {} from "@deepseek-ai/dsh-client-ui-message-feedback/client";
 import type {} from "@deepseek-ai/dsh-client-ui-model-selection/client";
 // open-in-app
 import type {} from "@deepseek-ai/dsh-client-ui-open-in-app/client";
+// deepseek-model-label-1017
+import type {} from "@deepseek-ai/dsh-client-ui-deepseek-model-label-1017/client";
 // settings.permission
 import type {} from "@deepseek-ai/dsh-client-ui-permission-presets/client";
 // plan
@@ -91,7 +95,7 @@ import type {} from "@deepseek-ai/dsh-client-ui-sidebar-browser/client";
 // The namespaces below ship no key union through their `exports`; each key
 // set is copied from the named package, and `pnpm drift` is the only check
 // that sees their upstream drift.
-/** Keys of @deepseek-ai/dsh-client-ui-trajectory@0.2.0-rc.2 (union lives in a declaration the package's `exports` never exposes). */
+/** Keys of @deepseek-ai/dsh-client-ui-trajectory@0.2.1-rc.2 (union lives in a declaration the package's `exports` never exposes). */
 type TrajectoryKey =
   | "view.trajectory"
   | "toolbar.aria"
@@ -243,7 +247,7 @@ type TrajectoryKey =
   | "details.error"
   | "details.failure.auth"
   | "details.retry"
-  | "details.scheduled"
+  | "details.lastAttemptError"
   | "details.retryDelay"
   | "details.result"
   | "details.compacted"
@@ -286,7 +290,7 @@ type TrajectoryKey =
   | "code.source"
   | "record.wrapLines";
 
-/** Keys of @deepseek-ai/dsh-client-ui-directory-picker-browse@0.2.0-rc.2 (registers through the untyped overload, no namespace merge). */
+/** Keys of @deepseek-ai/dsh-client-ui-directory-picker-browse@0.2.1-rc.2 (registers through the untyped overload, no namespace merge). */
 type DirectoryBrowserKey =
   | "browser.title"
   | "browser.home"
@@ -302,7 +306,7 @@ type DirectoryBrowserKey =
   | "browser.truncated"
   | "browser.showHidden";
 
-/** Keys of @deepseek-ai/dsh-client-ui-permission-presets@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-permission-presets@0.2.1-rc.2 (registers through the untyped overload). */
 type PermissionAccessKey =
   | "mode"
   | "close"
@@ -322,13 +326,13 @@ type PermissionAccessKey =
   | "auto.confirm.acknowledge"
   | "auto.confirm.enable";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type DocumentHtmlKey = "title" | "frame" | "loading" | "failed";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type DocumentMarkdownKey = "viewer.label" | "code.copy" | "code.copied" | "footnotes";
 
-/** Keys of @deepseek-ai/dsh-client-ui-reference@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-reference@0.2.1-rc.2 (registers through the untyped overload). */
 type ReferenceKey =
   | "section.files"
   | "section.subagents"
@@ -340,12 +344,16 @@ type ReferenceKey =
   | "time.hours"
   | "time.days"
   | "time.months"
-  | "time.years";
+  | "time.years"
+  | "fileOpen.title"
+  | "fileOpen.failed"
+  | "fileOpen.retry"
+  | "fileOpen.close";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarCodePreviewKey = "title" | "copy" | "copied";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarImageKey =
   | "title"
   | "preview"
@@ -359,7 +367,7 @@ type SidebarImageKey =
   | "zoomFitWidth"
   | "zoomValue";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarPdfKey =
   | "title"
   | "pageImage"
@@ -377,7 +385,7 @@ type SidebarPdfKey =
   | "zoomFitWidth"
   | "zoomValue";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-terminal@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-terminal@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarTerminalKey =
   | "shortcut.noSession"
   | "recoveryFailed"
@@ -408,7 +416,7 @@ type SidebarTerminalKey =
   | "invalidOutput"
   | "terminalLimit";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarExcelKey =
   | "title"
   | "language"
@@ -426,7 +434,7 @@ type SidebarExcelKey =
   | "featureSeparator"
   | "retry";
 
-/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.0-rc.2 (registers through the untyped overload). */
+/** Keys of @deepseek-ai/dsh-client-ui-sidebar-documentpreview@0.2.1-rc.2 (registers through the untyped overload). */
 type SidebarOfficeKey =
   | "title"
   | "loading"
@@ -555,6 +563,10 @@ const chat: LocaleDictOf<"chat"> = {
   "settings.transcript.standard": "標準",
   "settings.transcript.detailed": "詳細",
   "settings.transcript.verbose": "すべて表示",
+  "settings.collapse.title": "作業の詳細を折りたたむタイミング",
+  "settings.collapse.description": "作業の詳細を自動的に折りたたむタイミングを選択します",
+  "settings.collapse.completion": "回答の完了後",
+  "settings.collapse.nextInput": "次のメッセージ時",
   "fileOpen.title": "ファイルを開けませんでした",
   "fileOpen.unknown": "このファイルを開けませんでした",
   "message.extraBlock": "追加ブロック",
@@ -610,7 +622,9 @@ const chat: LocaleDictOf<"chat"> = {
   "message.retry.delay": "再試行までの待機：",
   "message.retry.failure": "失敗の理由：",
   "message.failure.auth": "API キーが無効です",
-  "message.accountStopped": "タスクを停止しました",
+  "message.taskStopped": "タスクを停止しました",
+  "message.failure.interrupted":
+    "DSH プロセスがこのターンの完了前に終了しました（強制終了・クラッシュ、またはシャットダウン時のタイムアウトなど）。そのため DSH の再起動時にこのターンは中止されました。未完了のツール呼び出しの結果は不明です。",
   "message.failure.accountSignedOut": "DeepSeek からサインアウトしたため停止しました。",
   "message.failure.accountSignInRequired":
     "DeepSeek にサインインし、リクエスト先がアカウント認証に対応していることを確認してください。",
@@ -809,7 +823,7 @@ const conversation: LocaleDictOf<"conversation"> = {
   "tool.title.createGoal": "目標を作成",
   "tool.title.getGoal": "目標を表示",
   "tool.title.updateGoal": "目標を更新",
-  "tool.preparing.content": "コンテンツを準備中 {kilobytes}KB",
+  "tool.preparing.content": "{kilobytes}KB",
   "tool.title.createSchedule": "スケジュールタスクを作成",
   "tool.title.listSchedules": "スケジュールタスク一覧",
   "tool.title.deleteSchedule": "スケジュールタスクを削除",
@@ -1032,6 +1046,10 @@ const conversation: LocaleDictOf<"conversation"> = {
   "row.input": "入力",
   "row.output": "出力",
   "row.inspect": "詳細を見る",
+  "row.commandArguments": "コマンド引数",
+  "row.imageSize": "{width}x{height}px、{bytes} バイト",
+  "row.imageSizeDownscaled":
+    "{width}x{height}px（{originalWidth}x{originalHeight}px から縮小）、{bytes} バイト",
   "tool.title.search": "検索",
   "tool.title.read": "読み取り",
   "tool.title.bash": "Bash",
@@ -1100,6 +1118,7 @@ const conversation: LocaleDictOf<"conversation"> = {
   "terminal.collapseAria": "出力を折りたたむ",
   "terminal.expandAria": "残り {n} 行の出力を展開",
   "terminal.expandRest": "… 残り {n} 行",
+  "terminal.commandLine": "コマンド {n} 行目",
   "terminal.sendInput": "（入力を送信）",
   "terminal.session": "ターミナル {sessionId}",
 };
@@ -1278,7 +1297,7 @@ const feedback: LocaleDictOf<"feedback"> = {
 
 const goal: LocaleDictOf<"goal"> = {
   "phase.active": "進行中の目標",
-  "phase.active.disarmed": "未実行の目標",
+  "phase.active.disarmed": "一時停止中の目標",
   "phase.paused": "一時停止中の目標",
   "phase.blocked": "ブロックされた目標",
   "objective.aria": "目標の内容",
@@ -1320,6 +1339,7 @@ const job: LocaleDictOf<"job"> = {
   "output.error": "リアルタイム出力ストリームが中断されました：{error}",
   "terminal.signal": "シグナル {signal}",
   "terminal.exitCode": "終了コード {code}",
+  "terminal.commandLine": "コマンド {n} 行目",
   "terminal.noExitCode": "終了コードなし",
   "terminal.running": "実行中",
   "terminal.failed": "失敗",
@@ -1447,14 +1467,29 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   refreshError: "更新に失敗しました。再試行してください",
   empty: "まだインストールされたプラグインはありません。",
   addPlugin: "プラグインを追加",
-  restartNotice: "変更は次回の起動時に有効になります",
+  restartNotice: "変更を反映するには DSH を再起動してください。{reason}",
   overriddenNotice:
     "{name} は保存されましたが、より優先度の高い設定が上書きしているため、現在は無効です",
-  bundlesTitle: "インストール済み",
-  officialTitle: "公式",
+  bundlesTitle: "インストール済みプラグイン",
+  installedTab: "インストール済み",
+  extensionsTitle: "実験的プラグイン",
+  moreTitle: "実験的プラグイン",
+  moreAction: "その他",
+  basicTitle: "内蔵プラグインの設定",
+  tabsLabel: "プラグインビュー",
   statusProblem: "異常",
   statusBeta: "実験的",
   reasonLabel: "理由",
+  reasonAlreadyInstalled:
+    "このパッケージはすでにインストールされています。別のバージョンをインストールするには、先にアンインストールしてください。",
+  restartReasonNoHmr: "この profile では変更は起動時にのみ適用されます。",
+  restartReasonHostModule: "変更が DSH 自身が読み込んだモジュールに及んでいます。",
+  restartReasonModuleComparison:
+    "DSH が読み込み済みプラグインとディスク上のファイルを比較できませんでした。",
+  restartReasonPackageMoved:
+    "インストール済みパッケージが別のディレクトリに解決されるようになったか、DSH インストール同梱のパッケージが変更で置き換えられました。別の場所からインストールする前に、先にアンインストールしてください。",
+  restartReasonUnmanagedPlugin:
+    "変更がプラグインリストの管理外で動作しているプラグインに及んでいます。",
   metadataError: "パッケージメタデータエラー：{error}",
   versionTag: "v{version}",
   partsLabel: "コンポーネント",
@@ -1474,7 +1509,7 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   rowPhaseUnloading: "アンロード中",
   enableToggle: "{name} を有効化",
   openDetail: "{name} を表示",
-  backToList: "プラグイン一覧に戻る",
+  backToList: "プラグインに戻る",
   crumbRoot: "プラグイン",
   backToPackage: "{name} に戻る",
   configureRow: "{name} を設定",
@@ -1500,7 +1535,7 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   installGuideSafety:
     "信頼できるプラグインのみをインストールしてください。プラグインは現在のユーザーの権限で実行され、DeepSeek Harness を破損させたりデータを漏洩させたりするおそれがあります。",
   installUpgradeNotice:
-    "インストール済みのプラグインは現時点で自動更新されません。アップグレードするには、一度アンインストールしてから新しいバージョンをインストールしてください。今後のリリースでアップグレード体験を改善していきます。",
+    "オンデマンドでインストールした公式プラグインは、DSH とバージョンが異なる場合に「更新」が表示されます。その他のプラグインを更新するには、一度アンインストールしてから新しいバージョンをインストールしてください。",
   registryToggle: "レジストリ",
   registryLegend: "プラグインのダウンロード元となる npm レジストリ",
   registryDefault: "デフォルトのレジストリ",
@@ -1515,6 +1550,13 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   sentenceSeparator: "",
   installRun: "インストール",
   installChecking: "確認中…",
+  chooseAddMethod: "プラグインの追加方法を選択",
+  installExisting: "サードパーティプラグインをインストール",
+  installExistingDescription: "npm パッケージ、Git リポジトリ、ローカルディレクトリに対応",
+  installConfirmedTitle: "プラグインをインストール",
+  installConfirmedRefused: "このプラグインはインストールできません",
+  installDoneOtherVersion:
+    "pnpm のサプライチェーンセキュリティポリシー（minimumReleaseAge）では、規定の期間が経過していないバージョンは自動インストールされないため、今回インストールされたのは最新の {version} ではなく {installed} です。公開されたばかりのバージョンはこの観察期間を終えておらず、未検出の悪意あるコードや不具合を含む可能性があります。{version} が必要な場合は、現在のバージョンをアンインストールしてから {exact} を指定してインストールしてください。",
   installProblemInvalid: "インストール可能なパッケージ名またはアドレスではありません：{reason}",
   installProblemInstalled:
     "このプラグインは既にインストールされています。アップグレードするには、アンインストールしてから再インストールしてください",
@@ -1531,6 +1573,21 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   installProblemUnknown: "プラグインの情報を取得できませんでした：{reason}",
   installingTitle: "プラグインをインストール中…",
   installedTitle: "インストール済み",
+  update: "更新",
+  updateLabel: "{name} を更新",
+  statusUpdateAvailable: "更新あり",
+  statusNotInstalled: "未インストール",
+  statusMissingFiles: "パッケージ利用不可",
+  sourceTitle: "ソース情報",
+  sourceSpec: "コードの取得元",
+  sourceVersion: "現在のバージョン",
+  sourceTargetSpec: "この DSH に対応する取得元",
+  sourceTargetVersion: "この DSH に対応するバージョン",
+  sourceBuiltIn: "内蔵",
+  sourceNotInstalled: "未インストール",
+  terminalCommandLine: "コマンド {n} 行目",
+  previewAlt: "{name} の機能プレビュー",
+  previewUnavailable: "機能プレビューを表示できませんでした",
   installFailedTitle: "プラグインをインストールできませんでした",
   installGithubFailedTitle: "GitHub にアクセスできません",
   installGithubTimeoutTitle: "GitHub への接続がタイムアウトしました",
@@ -1614,7 +1671,7 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   terminalSignal: "シグナル {signal}",
   terminalNoExitCode: "終了コードなし",
   installDoneNothing: "インストールが完了しました。新しい依存関係はありません。",
-  installDoneRestart: "インストールしました。次回の起動時に読み込まれます。",
+  installDoneRestart: "インストールしました。読み込むには DSH を再起動してください。{reason}",
   installDoneApproved: "{names} のインストールスクリプトを許可しました",
   installApprovalTitle: "インストールスクリプトの許可が必要です",
   installApprovalDescription:
@@ -1650,7 +1707,7 @@ const pluginManager: LocaleDictOf<"pluginManager"> = {
   reasonStaleApproval:
     "承認待ちのインストールスクリプトが変更されました。再インストールして最新の状態にしてください",
   reasonIncompatibleVersion:
-    "{plugin} は DSH {runtime} と互換性がありません（{peers} が必要）。実行するとクラッシュやデータ損失が発生する可能性があります。",
+    "{plugin} は DSH {runtime} と互換性がありません（{requirements} が必要）。実行するとクラッシュやデータ損失が発生する可能性があります。",
   reasonIncompatibleVersionUnnamed:
     "このプラグインは実行中の DSH バージョンと互換性がなく、実行するとクラッシュやデータ損失が発生する可能性があります。",
   reasonIncompatibleInstall:
@@ -1726,6 +1783,10 @@ const reference: Record<ReferenceKey, string> = {
   "time.days": "{n}日",
   "time.months": "{n}ヶ月",
   "time.years": "{n}年",
+  "fileOpen.title": "ファイルを開けませんでした",
+  "fileOpen.failed": "「{path}」を開けませんでした。再試行するか、このメッセージを閉じてください。",
+  "fileOpen.retry": "再試行",
+  "fileOpen.close": "閉じる",
 };
 
 const sessionLogDownload: LocaleDictOf<"session-log-download"> = {
@@ -1785,6 +1846,14 @@ const settings: LocaleDictOf<"settings"> = {
     "タスクの状態を確認できません。ワークスペースの準備ができてから再度アップデートしてください。",
   "desktop.update.versionDetail": "{label}：{version}",
   "desktop.update.retry": "アップデートを再試行",
+  "hostRelease.title": "サービスのバージョンが変更されました",
+  "hostRelease.description":
+    "サービスのバージョンが変更されました。このページはライブ更新を一時停止しています。再読み込みすると新しいバージョンが読み込まれます。",
+  "hostRelease.reload": "再読み込みして新しいバージョンを読み込む",
+  "hostRelease.later": "後で",
+  "hostRelease.page": "ページ",
+  "hostRelease.service": "サービス",
+  "hostRelease.unknown": "不明",
 };
 
 const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
@@ -1809,11 +1878,18 @@ const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
     "標準モードの全機能を含みます。ツールを一括で呼び出し、結果の絞り込み・整理・重複排除・集計・要約を行うタスクに向いています。",
   presetMinimalName: "ミニマルモード",
   presetMinimalDescription:
-    "ターミナルツールのみでタスクを実行します。基礎的な性能のテストや比較に適しています。",
+    "ターミナルと画像読み取りツールを使用し、コンテキスト圧縮に対応します。基礎的な性能のテストや比較に適しています。",
   presetCordisName: "クリエイターモード",
   presetCordisDescription:
     "会話で DSH をカスタマイズします。新機能や UI を追加するプラグインの作成や、ツールとプロンプトを組み合わせた独自モードの作成が行えます。",
   creatorDraft: "エージェントと一緒にプリセットモードを作成",
+  createPlugin: "エージェントにプラグインを作成させる",
+  createPluginDescription: "クリエイターモードに入って、自分の DSH プラグインを作成",
+  createPluginChecking: "クリエイターモードが利用可能か確認中",
+  createPluginMissing: "現在の構成ではクリエイターモードは提供されていません",
+  createPluginUnavailable: "一時的に利用できません。メニューを開き直して再試行してください",
+  standardUnavailable:
+    "標準モードは利用できません。復元するか、他の利用可能なモードを選択してください。",
   close: "閉じる",
   howToUse: "使い方",
   modeExplanation: "モードの詳細",
@@ -1837,7 +1913,7 @@ const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
   guideMinimalIntro:
     "新規タスクを開始するときにミニマルモードを選択します。比較測定では、モデル、権限、入力、ワークスペースの初期状態を各実行で揃えてください。",
   guideMinimalExplanation:
-    "### 含まれるもの\n\n永続シェルツール 1 つと、固定のシステムプロンプトです。この内蔵プリセットはスキル、プラン、コンテキスト圧縮、標準のランタイムコンテキストを読み込みません。\n\n### 選ぶタイミング\n\n実験や比較のベースラインとして使います。シェルコマンド経由でファイルの読み取りやスクリプト実行はできますが、長いタスクを管理する組み込みの手段は少なくなります。ツールが少ないからといって初心者向けというわけではありません。",
+    "### 含まれるもの\n\n永続シェルツール 1 つ、read_image、および固定のシステムプロンプトです。画像の読み取りには画像入力に対応したモデルが必要です。コンテキストの負荷がしきい値に達すると古い履歴が自動的に圧縮され、エージェントの待機中に /compact と入力して手動で圧縮することもできます。この内蔵プリセットはスキル、プラン、標準のランタイムコンテキストを読み込みません。\n\n### 選ぶタイミング\n\n実験や比較のベースラインとして使います。シェルコマンド経由でファイルの読み取りやスクリプト実行はできますが、長いタスクを管理する組み込みの手段は少なくなります。ツールが少ないからといって初心者向けというわけではありません。",
   guideMinimalUsage:
     "### 小さなバグ修正で性能を比較する\n\n> このプロジェクトのテストを実行し、失敗の原因を突き止め、最小限の修正を行ってください。関連テストを再実行し、結果を報告してください。\n\n同じ初期状態から、標準モードとミニマルモードで同じタスクをそれぞれ実行してください。完了状況、ツール呼び出し、最終的な変更を比較します。ミニマルモードはターミナルコマンドで作業を進めます。",
   guideCordisIntro:
@@ -1850,6 +1926,7 @@ const settingsAgentPreset: LocaleDictOf<"settings.agentPreset"> = {
 
 const settingsAccount: LocaleDictOf<"settings.account"> = {
   modelSignInRequired: "モデルを利用できません。サインインしてから再試行してください。",
+  noResponse: "操作が完了しませんでした。ネットワーク接続を確認のうえ、もう一度お試しください。",
   sessionExpired: "アカウントからサインアウトされました。再度サインインしてください。",
   onboardingArtworkLocale: "en",
   onboardingWelcome: "ようこそ",
@@ -2048,10 +2125,12 @@ const settingsWebSearch: LocaleDictOf<"settings.webSearch"> = {
   apiKeySet: "キーが設定されています。",
   apiKeyUnset:
     "キーが未設定です。DeepSeek アカウントのモデルを使用している会話のみ、デフォルトのエンドポイント経由で検索できます。",
-  baseUrl: "エンドポイント",
-  baseUrlHint: "空欄にするとプロバイダーのデフォルトを使用します。",
+  baseUrl: "Messages API ベース URL",
+  baseUrlHint:
+    "https://api.deepseek.com/anthropic/v1 のように API プレフィックスを含む URL を入力します。プロバイダーが /messages を追加します。空欄でデフォルトに戻ります。",
   maxUses: "リクエストあたりの最大検索回数",
-  maxUsesHint: "1 つのリクエストが回答の前に検索できる回数の上限。",
+  maxUsesHint:
+    "補助モデルが 1 回の Messages リクエスト内で実行できる検索の最大回数。Messages API にのみ適用されます。",
   overridden: "上書き設定済み",
   reset: "デフォルトに戻す",
   readOnly: "このデプロイでは設定は読み取り専用です。",
@@ -2061,6 +2140,18 @@ const settingsWebSearch: LocaleDictOf<"settings.webSearch"> = {
   saveFailed:
     "このデプロイはこれらの値を受け付けませんでした。修正できるよう入力を保持しています。",
   invalidNumber: "数値を入力してください。空欄の場合はデフォルト値を使用します。",
+  count: "1 回の検索あたりの結果数",
+  countHint:
+    "1 クエリあたりに返される結果の件数。1～50 の整数で、デフォルトは 10 です。これは検索の呼び出し回数ではなく結果数を制御します。web_search が保持するソース数は、自身の結果上限を超えません。",
+  invalidCount: "1～50 の整数を入力してください。空欄の場合はデフォルト値を使用します。",
+  searchApiBaseUrl: "Search / Fetch API ベース URL",
+  searchApiBaseUrlHint:
+    "https://api.deepseek.com/v1/tools のように API プレフィックスを含む URL を入力します。プロバイダーが /search または /fetch を追加します。空欄でデフォルトに戻ります。",
+  searchGuide: "Search & Fetch ガイド",
+  searchGuideUrl: "https://api-docs.deepseek.com/guides/search",
+  useSearchApi: "新しい Web 検索 API を使用",
+  useSearchApiHint:
+    "デフォルトはオフで、検索は DeepSeek Messages 経由で実行されます。新しい Web 検索 API の機能と課金の詳細：",
 };
 
 const settingsLocale: LocaleDictOf<"settings.locale"> = {
@@ -2093,7 +2184,8 @@ const settingsModels: LocaleDictOf<"settings.models"> = {
     "中継サーバー、セルフホスト環境、その他 OpenAI / Anthropic 互換のエンドポイントを、ベース URL・プロトコル・モデルを指定して接続します。",
   addCustomUnavailable: "利用できる API プロトコルがありません。",
   deepSeekAccount: "DeepSeek アカウント",
-  deepSeekBaseUrl: "https://api.deepseek.com/anthropic",
+  deepSeekBaseUrl:
+    "https://api.deepseek.com/anthropic（デフォルトでは環境変数 DEEPSEEK_BASE_URL を使用）",
   deepSeekEndpointHint: "Anthropic Messages 互換の API エンドポイントを指定してください。",
   provider: "プロバイダー",
   close: "閉じる",
@@ -2110,12 +2202,25 @@ const settingsModels: LocaleDictOf<"settings.models"> = {
   retry: "再試行",
   keyInput: "API キー",
   keyPlaceholder: "API キーを入力",
-  keyPlaceholderNative: "API キーを入力（環境の認証情報を使う場合は空欄のまま）",
-  keyStored: "設定済み。新しい値を入力すると置き換わります",
-  keyEnvLocked: "起動環境から取得（読み取り専用）",
+  accountSignedIn: "サインイン済み",
+  authHelp: "認証の詳細",
+  keyPlaceholderSaved: "空欄で保存済みの認証情報を使用",
+  keyPlaceholderFallback: "空欄で環境変数を認証に使用（{hint}）",
+  keyReveal: "シークレットを表示",
+  keyHide: "シークレットを隠す",
+  keyFallbackDetected: "環境変数を検出しました（{hint}）",
+  keyFallbackDetectedHidden: "環境変数を検出しました",
+  keyFallbackMissing:
+    "環境変数は検出されませんでした。API キーを入力するか、環境変数 {hint} を設定してください。",
+  keyFallbackUnchecked: "環境認証情報の状態は未確認です",
+  keyHelp:
+    "保存済みの認証情報が優先されます。ここに表示される環境フォールバックの順序：{env}。ソースは起動環境、$cwd/.env、$DSH_HOME/.env の順です。",
   customized: "カスタム設定",
   baseUrl: "エンドポイント",
-  baseUrlDefault: "プロバイダーのデフォルト",
+  baseUrlDefault: "デフォルトのエンドポイントなし",
+  baseUrlConfigured: "プロバイダー設定のエンドポイント",
+  baseUrlEnvironment: "プロバイダーエンドポイント設定：{env}",
+  baseUrlPlaceholder: "{url}",
   models: "モデルカタログ",
   modelsInherited: "アダプターのデフォルトモデルを使用中",
   modelsCustomized: "モデルカタログをカスタマイズ済み",
@@ -2134,6 +2239,19 @@ const settingsModels: LocaleDictOf<"settings.models"> = {
   modelAdvanced: "モデルオプション",
   addModel: "モデルを追加",
   removeModel: "モデルを削除",
+  modelReasoning: "思考レベル",
+  modelReasoningHelp: "思考レベルについて",
+  modelReasoningHelpText:
+    "API 値はリクエストの推論強度フィールド（OpenAI の reasoning_effort など）に送信されます。デフォルトはレベル名と同じです。モデルプロバイダーの API ドキュメントで別の値が指定されている場合は、そちらに従ってください。Off は思考をオフにし、値は不要です。設定にすでに書き込まれた値は保持され、送信されます。",
+  modelReasoningLevel: "レベル",
+  modelReasoningValue: "API 値",
+  modelReasoningOffValuePlaceholder: "思考をオフにします",
+  modelReasoningAdd: "レベルを追加",
+  modelReasoningRemove: "レベルを削除",
+  modelReasoningNeedsLevel:
+    "Off 以外のレベルを少なくとも 1 つ追加するか、思考レベルをオフにしてください。",
+  modelReasoningValueRequired:
+    "Off 以外のすべてのレベルには API 値が必要で、空の文字列は使用できません。",
   modelsEmpty: "モデルセレクターには何も表示されません。一覧にない ID もそのまま送信できます。",
   keyBlank: "API キーを入力してください。空欄の場合は保存済みのキーを維持します。",
   keyBlankNew:
@@ -2224,7 +2342,6 @@ const settingsPluginInventory: LocaleDictOf<"settings.pluginInventory"> = {
   emptySearch: "一致するプラグインがありません。",
   presetTitle: "セッションプラグイン",
   presetSubtitle: "エージェントプリセットがセッションごとに構成します",
-  countUnit: "個",
   switcherLabel: "確認するエージェントプリセットを選択",
   presetOptionDefault: "{name}（デフォルト）",
   presetOptionBroken: "{name}（読み込み失敗）",
@@ -2232,9 +2349,7 @@ const settingsPluginInventory: LocaleDictOf<"settings.pluginInventory"> = {
   globalSubtitle: "システムとすべてのセッションで共有されます",
   presetProvidedDetail: "グローバルでは無効。エージェントプリセットがセッションごとに提供します",
   enabledIn: "有効な場所",
-  viewInPreset: "プリセットグループで表示",
   matchesInOtherPresets: "他のプリセットにさらに {count} 件の一致：",
-  failedCountLabel: "失敗",
   enabledTag: "有効",
   disabledTag: "無効",
   conditionalTag: "条件付きで有効",
@@ -2266,11 +2381,30 @@ const settingsTheme: LocaleDictOf<"settings.theme"> = {
   "appearance.light": "ライト",
   "appearance.dark": "ダーク",
   "appearance.system": "システム",
-  "fontSize.title": "文字サイズ",
-  "fontSize.description": "会話の本文にのみ適用されます",
   "fontSize.unit": "px",
-  "fontSize.increase": "文字を大きくする",
-  "fontSize.decrease": "文字を小さくする",
+  "fontSize.text.title": "文字サイズ",
+  "fontSize.text.description": "会話の本文にのみ適用されます",
+  "fontSize.text.increase": "文字を大きくする",
+  "fontSize.text.decrease": "文字を小さくする",
+  "fontSize.code.title": "コードの文字サイズ",
+  "fontSize.code.description": "コードブロック、インラインコード、ツール出力に使用",
+  "fontSize.code.increase": "コードの文字を大きくする",
+  "fontSize.code.decrease": "コードの文字を小さくする",
+  "fontSize.terminal.title": "ターミナルの文字サイズ",
+  "fontSize.terminal.description": "サイドバーターミナルに使用",
+  "fontSize.terminal.increase": "ターミナルの文字を大きくする",
+  "fontSize.terminal.decrease": "ターミナルの文字を小さくする",
+  "fontSize.more": "その他のフォント設定",
+  "fontFamily.text.title": "テキストフォント",
+  "fontFamily.text.description":
+    "インターフェースと会話本文に使用されます。複数のフォントはカンマで区切ります。空欄でデフォルトを使用",
+  "fontFamily.code.title": "コードフォント",
+  "fontFamily.code.description":
+    "コードブロック、インラインコード、ツール出力に使用されます。複数のフォントはカンマで区切ります。空欄でデフォルトを使用",
+  "fontFamily.terminal.title": "ターミナルフォント",
+  "fontFamily.terminal.description":
+    "サイドバーターミナルに使用されます。複数のフォントはカンマで区切ります。空欄でデフォルトを使用",
+  "fontFamily.placeholder": "デフォルト",
 };
 
 const shortcuts: LocaleDictOf<"shortcuts"> = {
@@ -2629,6 +2763,8 @@ const subagent: LocaleDictOf<"subagent"> = {
   "mode.oneShot": "ワンショット",
   "mode.continuable": "継続可能",
   "mode.unknown": "不明なモード",
+  "mode.external": "外部タスク",
+  "catalog.migrationRequired": "移行が必要",
   "readonly.unknown.body": "子セッションを読み込むと、継続できるかどうかがわかります。",
   "activity.running": "実行中",
   "activity.completed": "完了",
@@ -2810,7 +2946,7 @@ const trajectory: Record<TrajectoryKey, string> = {
   "details.error": "エラー",
   "details.failure.auth": "API キーが無効です",
   "details.retry": "再試行",
-  "details.scheduled": "予定済み",
+  "details.lastAttemptError": "最終試行のエラー",
   "details.retryDelay": "再試行の待機時間",
   "details.result": "結果",
   "details.compacted": "圧縮済み",
@@ -2942,6 +3078,15 @@ const workspace: LocaleDictOf<"workspace"> = {
   "menu.unarchiveSession": "セッションのアーカイブを解除",
   "menu.pinSession": "セッションをピン留め",
   "menu.unpinSession": "セッションのピン留めを解除",
+  "menu.sessionId": "セッション ID をコピー",
+  "draft.initializationFailed":
+    "ドラフトに挿入できませんでした。しばらくしてからもう一度お試しください",
+  "draft.workspaceRequired": "先にワークスペースを選択してください。",
+  "toast.forkRequiresOpen":
+    "フォークを作成する前に、移行を完了するため元のセッションを開いてください。",
+  "toast.openForkSource": "元のセッションを開く",
+  "toast.sessionIdCopied": "セッション ID をコピーしました",
+  "toast.sessionIdCopyFailed": "コピーに失敗しました。もう一度お試しください。",
   "row.archived": "アーカイブ済み",
   "row.pinned": "ピン留め済み",
   "toast.archivedNotOpenable":
@@ -2985,6 +3130,286 @@ const workspace: LocaleDictOf<"workspace"> = {
   "time.months": "{n}ヶ月",
   "time.years": "{n}年",
   "time.ago": "{t}前",
+};
+const deepseekModelLabel1017: LocaleDictOf<"deepseek-model-label-1017"> = {
+  "badge.label": "1017",
+};
+
+const scheduleCatalog: LocaleDictOf<"schedule.catalog"> = {
+  "trigger.label": "リマインダー",
+  "list.loading": "リマインダーを読み込み中…",
+  "list.error": "リマインダーを読み込めませんでした。",
+  "list.retry": "再試行",
+  "delete.action": "削除",
+  "delete.pending": "削除中…",
+  "delete.label": "リマインダーを削除：{title}",
+  "list.open": "リマインダーの詳細を開く：{title}",
+  "trigger.one": "{count} 件のリマインダー",
+  "trigger.other": "{count} 件のリマインダー",
+  "list.aria": "アクティブなリマインダー",
+  "list.nextRun": "次回の実行",
+  "frequency.once": "1 回のみ",
+  "frequency.every": "{value}{unit}ごと",
+  "time.locale": "ja-JP",
+  "time.utcPrefix": "UTC",
+  "frequency.daily": "毎日 {time}（{timeZone}）",
+  "frequency.dailyLocal": "毎日 {time}",
+  "frequency.weekly": "毎週{weekdays}曜 {time}（{timeZone}）",
+  "frequency.weeklyLocal": "毎週{weekdays}曜 {time}",
+  "frequency.cron": "Cron {expression}（{timeZone}）",
+  "frequency.cronLocal": "Cron {expression}",
+  "frequency.cronRule": "{rule}（{timeZone}）",
+  "cron.list.join": "、",
+  "cron.part.join": " ",
+  "cron.weekday.name": "{weekday}曜日",
+  "cron.weekday.range": "{from}～{to}",
+  "cron.months": "（{months}）",
+  "cron.day.every": "毎日{months}",
+  "cron.day.weekdays": "{weekdays}{months}",
+  "cron.day.monthDays": "毎月 {days} 日{months}",
+  "cron.day.both": "毎月 {days} 日または{weekdays}{months}",
+  "cron.day.bothStarred": "毎月 {days} 日かつ{weekdays}{months}",
+  "cron.hours.range": "{from}～{to}",
+  "cron.hours.list": "{hours}",
+  "cron.time.everyMinute": "毎分",
+  "cron.time.everyMinutes": "{step} 分ごと",
+  "cron.time.joinedEveryMinute": "毎分",
+  "cron.time.joinedEveryMinutes": "{step} 分ごと",
+  "cron.time.everyHour": "毎時",
+  "cron.time.joinedEveryHour": "毎時",
+  "cron.time.everyNHours": "{count} 時間ごと",
+  "cron.time.joinedEveryNHours": "{count} 時間ごと",
+  "cron.time.hourlyAt": "毎時 {minutes} 分",
+  "cron.time.joinedHourlyAt": "毎時 {minutes} 分",
+  "cron.time.hoursEveryMinute": "{hours} 時台の毎分",
+  "cron.time.hoursEveryMinutes": "{hours} 時台の {step} 分ごと",
+  "cron.time.at": "{times}",
+  "cron.time.hoursAt": "{hours} 時の {minutes} 分",
+  "frequency.weekday.join": "、",
+  "frequency.weekday.1": "月",
+  "frequency.weekday.2": "火",
+  "frequency.weekday.3": "水",
+  "frequency.weekday.4": "木",
+  "frequency.weekday.5": "金",
+  "frequency.weekday.6": "土",
+  "frequency.weekday.7": "日",
+  "unit.day.one": "日",
+  "unit.day.other": "日",
+  "unit.hour.one": "時間",
+  "unit.hour.other": "時間",
+  "unit.minute.one": "分",
+  "unit.minute.other": "分",
+  "unit.second.one": "秒",
+  "unit.second.other": "秒",
+  "relative.now": "期限です",
+  "relative.future": "{value}{unit}後",
+  "relative.overdue": "{value}{unit}超過",
+  "mark.aria": "{count} 件の自動化タスク",
+  "hover.more": "他 {count} 件",
+};
+
+const scheduleManager: LocaleDictOf<"schedule.manager"> = {
+  panel: "自動化タスク",
+  title: "自動化タスク",
+  "new.action": "新規",
+  "list.label": "タスクリスト",
+  "list.nextPrefix": "次回の予定時刻：",
+  "list.loading": "タスクを読み込み中…",
+  "list.error": "タスクを読み込めませんでした。",
+  "list.retry": "再試行",
+  "list.empty": "自動化タスクはまだありません。セッションで作成したタスクがここに表示されます。",
+  "list.emptyInactive": "終了した自動化タスクはありません",
+  "list.noMatches": "一致する自動化タスクはありません",
+  "search.label": "タスクを検索",
+  "search.placeholder": "自動化タスクを検索",
+  "search.clear": "検索をクリア",
+  "empty.action": "自動化タスクを新規作成",
+  "statusFilter.label": "タスクの状態",
+  "statusFilter.all": "すべて",
+  "status.active": "有効",
+  "status.inactive": "終了",
+  "detail.label": "タスクの詳細",
+  "detail.close": "詳細を閉じる",
+  "detail.more": "自動化タスクの操作",
+  "detail.nextRun": "次回の実行",
+  "detail.tabs": "タスク詳細ビュー",
+  "detail.rule": "ルール",
+  "detail.records": "実行履歴",
+  "delivery.empty": "実行履歴はまだありません",
+  "delivery.loading": "実行履歴を読み込み中…",
+  "delivery.error": "実行履歴を読み込めませんでした。",
+  "delivery.notFound": "このタスクは利用できなくなりました。",
+  "delivery.cursorError": "履歴が更新されました。",
+  "delivery.retry": "再試行",
+  "delivery.refresh": "更新",
+  "delivery.loadMore": "さらに読み込む",
+  "delivery.expand": "展開",
+  "delivery.collapse": "折りたたむ",
+  "delivery.pruned": "より古い実行履歴は削除されました",
+  "delivery.retention": "保持ルール",
+  "delivery.retentionBounds":
+    "各タスクは直近 {days} 日以内の実行履歴を最大 {records} 件保持します。",
+  "delivery.retentionExplanation":
+    "新しい履歴が保存されると、範囲外の古い履歴は自動的に削除されます。履歴の削除はタスクの実行に影響しません。",
+  "detail.name": "自動化タスク名",
+  "detail.instruction": "自動化タスクの内容",
+  "detail.status": "状態",
+  "detail.next": "次回の予定時刻",
+  "detail.frequency": "頻度",
+  "detail.id": "タスク ID",
+  "detail.session": "関連セッション",
+  "detail.openSession": "関連セッション：元のセッションを開く",
+  "detail.openSessionTitle": "関連セッション {title}：元のセッションを開く",
+  "detail.sessionLoading": "元のセッション情報を読み込み中",
+  "detail.sessionArchived": "元のセッションはアーカイブされています。",
+  "detail.sessionUnavailable": "元のセッションは現在利用できません。",
+  "detail.missing": "タスクは利用できなくなりました。削除された可能性があります。",
+  "delivery.label": "保存済みの実行履歴",
+  "frequency.once": "1 回のみ",
+  "frequency.every": "{value}{unit}ごと",
+  "time.locale": "ja-JP",
+  "time.utcPrefix": "UTC",
+  "frequency.daily": "毎日 {time}（{timeZone}）",
+  "frequency.dailyLocal": "毎日 {time}",
+  "frequency.weekly": "毎週{weekdays}曜 {time}（{timeZone}）",
+  "frequency.weeklyLocal": "毎週{weekdays}曜 {time}",
+  "frequency.cron": "Cron {expression}（{timeZone}）",
+  "frequency.cronLocal": "Cron {expression}",
+  "frequency.cronRule": "{rule}（{timeZone}）",
+  "cron.list.join": "、",
+  "cron.part.join": " ",
+  "cron.weekday.name": "{weekday}曜日",
+  "cron.weekday.range": "{from}～{to}",
+  "cron.months": "（{months}）",
+  "cron.day.every": "毎日{months}",
+  "cron.day.weekdays": "{weekdays}{months}",
+  "cron.day.monthDays": "毎月 {days} 日{months}",
+  "cron.day.both": "毎月 {days} 日または{weekdays}{months}",
+  "cron.day.bothStarred": "毎月 {days} 日かつ{weekdays}{months}",
+  "cron.hours.range": "{from}～{to}",
+  "cron.hours.list": "{hours}",
+  "cron.time.everyMinute": "毎分",
+  "cron.time.everyMinutes": "{step} 分ごと",
+  "cron.time.joinedEveryMinute": "毎分",
+  "cron.time.joinedEveryMinutes": "{step} 分ごと",
+  "cron.time.everyHour": "毎時",
+  "cron.time.joinedEveryHour": "毎時",
+  "cron.time.everyNHours": "{count} 時間ごと",
+  "cron.time.joinedEveryNHours": "{count} 時間ごと",
+  "cron.time.hourlyAt": "毎時 {minutes} 分",
+  "cron.time.joinedHourlyAt": "毎時 {minutes} 分",
+  "cron.time.hoursEveryMinute": "{hours} 時台の毎分",
+  "cron.time.hoursEveryMinutes": "{hours} 時台の {step} 分ごと",
+  "cron.time.at": "{times}",
+  "cron.time.hoursAt": "{hours} 時の {minutes} 分",
+  "frequency.weekday.join": "、",
+  "frequency.weekday.1": "月",
+  "frequency.weekday.2": "火",
+  "frequency.weekday.3": "水",
+  "frequency.weekday.4": "木",
+  "frequency.weekday.5": "金",
+  "frequency.weekday.6": "土",
+  "frequency.weekday.7": "日",
+  "unit.day.one": "日",
+  "unit.day.other": "日",
+  "unit.hour.one": "時間",
+  "unit.hour.other": "時間",
+  "unit.minute.one": "分",
+  "unit.minute.other": "分",
+  "unit.second.one": "秒",
+  "unit.second.other": "秒",
+  "relative.now": "期限です",
+  "relative.future": "{value}{unit}後",
+  "relative.overdue": "{value}{unit}超過",
+  "timing.date": "日付",
+  "timing.time": "時刻",
+  "timing.hour": "時",
+  "timing.minute": "分",
+  "timing.second": "秒",
+  "timing.prevMonth": "前の月",
+  "timing.nextMonth": "次の月",
+  "timing.zone": "タイムゾーン",
+  "timing.zoneSearch": "UTC オフセット、IANA ID、または都市名で検索",
+  "timing.zoneNoResults": "一致するタイムゾーンはありません",
+  "timing.interval": "繰り返し間隔",
+  "timing.intervalIncrease": "間隔を大きくする",
+  "timing.intervalDecrease": "間隔を小さくする",
+  "timing.unit.hour": "時間",
+  "timing.unit.minute": "分",
+  "timing.unit.second": "秒",
+  "timing.intervalHint.hour":
+    "最小 1 時間。間隔はタスクの作成時または最後のルール変更時から数えられ、タイムゾーンの影響を受けません",
+  "timing.intervalHint.minute":
+    "最小 1 分。間隔はタスクの作成時または最後のルール変更時から数えられ、タイムゾーンの影響を受けません",
+  "timing.intervalHint.second":
+    "最小 60 秒。間隔はタスクの作成時または最後のルール変更時から数えられ、タイムゾーンの影響を受けません",
+  "timing.zoneNoStored":
+    "単発タスクはタイムゾーンではなく発生時刻のみを保存します。日付と時刻は選択したタイムゾーンで解釈されます。",
+  "timing.inactive": "終了したタスクは読み取り専用で、時刻は編集できません。",
+  "timing.conflict":
+    "編集中にタスクが変更されました。ドラフトは保持されています。最新のルールを編集するには、再読み込み後にキャンセルして編集画面を開き直してください",
+  "timing.notFound":
+    "このタスクは現在利用できません。ドラフトは保持されています。キャンセルして編集画面を閉じてください",
+  "timing.subagentSession":
+    "このセッションはサブエージェントのもので、配信されたリマインダーが届くことはありません。",
+  "timing.invalid": "有効な日付と時刻を入力するか、時刻フィールドを確認してください",
+  "timing.invalidZone": "Asia/Shanghai のような有効な IANA タイムゾーンを入力してください",
+  "timing.notFuture": "未来の日付と時刻を選択してください。",
+  "timing.invalidInterval": "1 分以上の間隔を入力してください",
+  "timing.invalidInterval.hour": "1 時間以上の間隔を入力してください",
+  "timing.invalidInterval.minute": "1 分以上の間隔を入力してください",
+  "timing.invalidInterval.second": "60 秒以上の間隔を入力してください",
+  "timing.error":
+    "時刻の変更が保存されたか確認できませんでした。ドラフトは保持されています。再試行前にタスクを確認してください",
+  "rule.title": "実行時刻",
+  "rule.repeat": "繰り返し",
+  "rule.weekday": "曜日",
+  "rule.weekdayOption": "{weekday}曜日",
+  "rule.unsaved": "未保存の変更があります",
+  "rule.save": "変更を保存",
+  "rule.saving": "保存中…",
+  "rule.cancel": "キャンセル",
+  "rule.invalidTitle": "120 文字以内のタスク名を入力してください",
+  "rule.invalidPrompt": "タスクの内容を入力してください",
+  "rule.once": "1 回のみ",
+  "rule.everyMinutes": "N 分ごと",
+  "rule.everyHours": "N 時間ごと",
+  "rule.everySeconds": "N 秒ごと",
+  "rule.daily": "毎日",
+  "rule.weekdays": "月曜～金曜",
+  "rule.weekly": "毎週",
+  "rule.cron": "カスタム",
+  "rule.cronLabel": "Cron 式",
+  "rule.cronInvalid": "0 9 * * 1-5 のような 5 フィールドの cron 式を入力してください",
+  "cronForm.frequency": "頻度",
+  "cronForm.monthly": "毎月",
+  "cronForm.weekly": "毎週",
+  "cronForm.daily": "毎日",
+  "cronForm.dates": "対象日",
+  "cronForm.dateOption": "{day} 日",
+  "cronForm.atMinute": "分",
+  "cronForm.minuteIncrease": "分を大きくする",
+  "cronForm.minuteDecrease": "分を小さくする",
+  "rule.zone.system": "（システム）",
+  "rule.error.conflict":
+    "保存前にタスクが変更されました。表示されているのは保存済みのルールです。もう一度お試しください",
+  "rule.error.notFound": "このタスクは現在利用できません",
+  "rule.error.unknown":
+    "ルールが更新されたか確認できませんでした。表示されているのは保存済みのルールです",
+  "delete.action": "タスクを削除",
+  "delete.title": "このタスクを削除しますか？",
+  "delete.description":
+    "タスクはトリガーされなくなり、保存済みの実行履歴とともに削除されます。元のセッションとそのメッセージは残ります。キューに入ったメッセージは取り消されません。",
+  "delete.confirm": "削除を確定",
+  "delete.cancel": "キャンセル",
+  "delete.close": "削除確認を閉じる",
+  "delete.pending": "削除中…",
+  "toast.deleted": "タスクを削除しました",
+  "toast.deleteFailed": "タスクを削除できませんでした",
+  "card.open": "開く",
+  "card.openLabel": "タスクの詳細を開く：{title}",
+  "card.deleted": "削除済み",
+  "tool.invoked": "{name} を呼び出しました",
 };
 
 export const DICTS: Record<string, Record<string, string>> = {
@@ -3042,4 +3467,7 @@ export const DICTS: Record<string, Record<string, string>> = {
   trajectory: trajectory,
   workflowRun: workflowRun,
   workspace: workspace,
+  "deepseek-model-label-1017": deepseekModelLabel1017,
+  "schedule.catalog": scheduleCatalog,
+  "schedule.manager": scheduleManager,
 };

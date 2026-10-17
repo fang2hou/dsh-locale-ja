@@ -11,7 +11,7 @@ const { name: PACKAGE_ID } = JSON.parse(readFileSync(resolve(root, "package.json
 };
 const bundle = readFileSync(resolve(root, "lib/client.js"), "utf8");
 
-const NAMESPACE_COUNT = 54;
+const NAMESPACE_COUNT = 57;
 
 let failures = 0;
 
