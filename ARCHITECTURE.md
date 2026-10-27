@@ -7,7 +7,7 @@ agents modify the codebase. Keep it short and operational.
 ## What this project is
 
 `@fang2hou/dsh-locale-ja` is a **standard DSH client plugin package** for
-DeepSeek Harness (DSH) `0.2.1-rc.2`, supported on the `web` profile. Its Host
+DeepSeek Harness (DSH) `0.2.1-rc.4`, supported on the `web` profile. Its Host
 half (`src/index.ts`) exports an empty `apply()` only so the package can mount a
 Loader row; its browser half (`src/client/index.ts`) performs locale
 registration and all user-facing work. `dsh plugin --profile web add
@@ -66,16 +66,16 @@ registration and all user-facing work. `dsh plugin --profile web add
    export them.** `src/client/dictionaries.ts` defines local key unions only for
    namespaces whose owning packages omit them from `exports`:
    `directory-browser`
-   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.2.1-rc.2`),
+   (`@deepseek-ai/dsh-client-ui-directory-picker-browse@0.2.1-rc.4`),
    `permission.access`
-   (`@deepseek-ai/dsh-client-ui-permission-presets@0.2.1-rc.2`), `trajectory`
-   (`@deepseek-ai/dsh-client-ui-trajectory@0.2.1-rc.2`), and the nine
+   (`@deepseek-ai/dsh-client-ui-permission-presets@0.2.1-rc.4`), `trajectory`
+   (`@deepseek-ai/dsh-client-ui-trajectory@0.2.1-rc.4`), and the nine
    runtime-only namespaces registered through the untyped overload
    (`documentHtml`, `documentMarkdown`, `reference`, `sidebarCodePreview`,
    `sidebarExcel`, `sidebarImage`, `sidebarOffice`, `sidebarPdf`, and
    `sidebarTerminal`), each citing its source package and version. `pnpm
    typecheck` catches key drift across the exported unions, and `pnpm drift`
-   (`scripts/check-dict-drift.ts`) verifies all 57 namespaces against a real
+   (`scripts/check-dict-drift.ts`) verifies all 58 namespaces against a real
    DSH web tree.
 
 8. **Code identifiers, comments, and configuration must stay in English; Japanese
@@ -92,7 +92,7 @@ registration and all user-facing work. `dsh plugin --profile web add
   `locale.addLanguage` and returns the runtime's disposer.
 - `src/client/font.ts`: Inserts and removes the locale-scoped `<style>` tag for
   `--dsw-font-family`.
-- `src/client/dictionaries.ts`: Holds the 54 Japanese namespace dictionaries and
+- `src/client/dictionaries.ts`: Holds the 58 Japanese namespace dictionaries and
   their platform or local key unions.
 - `scripts/build.ts`: Emits declarations, the Host ESM entry, and the browser
   loader bundle, then checks the loader envelope, zero-`require` purity, module
