@@ -218,6 +218,14 @@ test.describe.serial("conversation: a mock-LLM turn renders the japanese chrome"
     await page.keyboard.press("Escape");
     await page.getByRole("dialog").waitFor({ state: "hidden" });
 
+    // The new sidebar More menu must use Japanese for both its trigger and
+    // the shared plugin actions, rather than falling back to English.
+    await page.getByRole("button", { name: "その他", exact: true }).click();
+    await expect(page.getByRole("menuitem", { name: "他のプラグインを探す" })).toBeVisible();
+    await expect(page.getByRole("menuitem", { name: "プラグインを作成" })).toBeVisible();
+    await page.screenshot({ path: testInfo.outputPath("entry-customization-ja.png") });
+    await page.keyboard.press("Escape");
+
     await page.getByRole("button", { name: "ワークスペースを選択" }).click();
     const picker = page.getByRole("dialog");
     await picker.waitFor();

@@ -11,7 +11,7 @@ const { name: PACKAGE_ID } = JSON.parse(readFileSync(resolve(root, "package.json
 };
 const bundle = readFileSync(resolve(root, "lib/client.js"), "utf8");
 
-const NAMESPACE_COUNT = 57;
+const NAMESPACE_COUNT = 58;
 
 let failures = 0;
 
@@ -287,9 +287,14 @@ plugin.apply(ctxOf(locale));
 const japanese = locale.registrations.filter((entry) => entry.id === "ja");
 assert(japanese.length === NAMESPACE_COUNT, `registers ${NAMESPACE_COUNT} namespaces for ja`);
 assert(
-  ["common", "conversation", "trajectory", "workspace", "permission.access"].every((ns) =>
-    japanese.some((entry) => entry.ns === ns),
-  ),
+  [
+    "common",
+    "conversation",
+    "entryCustomization",
+    "trajectory",
+    "workspace",
+    "permission.access",
+  ].every((ns) => japanese.some((entry) => entry.ns === ns)),
   "covers the namespaces owned by different packages",
 );
 assert(
