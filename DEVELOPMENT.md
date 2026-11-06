@@ -224,26 +224,17 @@ is throwaway by design), `mise run dev-restart` (manual DSH restart),
 `mise run dev-logs`. Test against another DSH with `DSH_DEV_DSH_VERSION`
 (exact version, `next`, or `latest`), same override the E2E suite uses.
 
-## Watching upstream DSH releases
+## Upstream DSH releases
 
-DSH is a developer preview that ships faster than this plugin pins it. The
-`E2E next DSH` workflow (`.github/workflows/e2e-upstream.yml`) runs twice a
-day on `main` against the registry's `next` release — the prerelease line the
-plugin tracks — and fails the run — and emails the repo owner — when upstream
-drifts:
+The scheduled `E2E next DSH` workflow was removed when DSH `0.2.2-rc.1` began
+shipping Japanese natively ([ADR-0007](./docs/adr/0007-retire-in-favor-of-builtin-japanese.md)).
+This package stays pinned to `0.2.1-rc.4`; there is no upstream watch.
 
-- **E2E on the next DSH** catches runtime breakage (locale service
-  contracts, plugin loading, UI structure).
-- **`mise run drift`** (`scripts/check-dict-drift.ts`) installs that
-  release's full web tree into a throwaway directory and diffs the Japanese
-  dictionaries against the shipped locale key contracts — every namespace,
-  including all twelve locally declared ones — reporting missing keys (fallback
-  leaks through), stale keys, and uncovered or removed namespaces.
-
-Both checks also run on manual dispatch, where a `dsh_version` input accepts
-an exact version to preview a release before the pin moves to it. A red
-nightly means: pull that DSH version into devDependencies and
-`e2e/harness.ts`'s pin, refresh `src/client/dictionaries.ts`, and release.
+`mise run drift` (`scripts/check-dict-drift.ts`) remains for on-demand use. It
+installs a release's full web tree into a throwaway directory and diffs the
+Japanese dictionaries against the shipped locale key contracts, reporting
+missing keys, stale keys, and uncovered or removed namespaces. Pass
+`--dsh <version>` to pick the release.
 
 ## Testing against a real DSH
 
